@@ -18,6 +18,9 @@ def multi_sigmoid(scores: np.array) -> np.array:
   probabilities[-1] = 1-np.sum(probabilities)
   return probabilities
   
+class KNN():
+  def __init__(self):
+    pass
 
 class Logistic_Regression():
   
@@ -33,6 +36,15 @@ class Logistic_Regression():
   def predict(self, X):
     pass
 
+
+class LDA():
+  def __init__(self):
+    pass
+
+class QDA():
+  def __init__(self):
+    pass
+    
 # -----TESTES-----
 if __name__ == "__main__":
   pass
