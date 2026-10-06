@@ -82,3 +82,104 @@ def mse(x:np.ndarray, y:np.ndarray) -> float:
         ValueError('Os dois vetores devem ter o mesmo tamanho')
 
     return risco_empirico(x, y, 2)
+
+# Testes para as funções criadas até o momento
+
+if __name__ == '__main__':
+
+    # Vetores para teste
+    a = np.array([3, 5, 21, 7, 5, 8])
+    b = np.array([4, 6, 12, 4, 4, 1])
+
+    tol = 1e-9 # Tolerância do erro
+
+    indx = 1
+    # Deve retornar 22
+    if abs(perda(a, b, 1) - 22) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 142
+    if abs(perda(a, b, 2) - 142) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 76_102
+    if abs(perda(a, b, 5) - 76_102) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 9
+    if abs(perda(a, b, np.inf) - 9) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 22
+    if abs(sae(a, b) - 22) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 142
+    if abs(rss(a, b) - 142) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 9
+    if abs(me(a, b) - 9) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 22/6 ≃ 3.666666666
+    if abs(risco_empirico(a, b, 1) - 3.666666666) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 142/6 ≃ 23.666666666
+    if abs(risco_empirico(a, b, 2) - 23.666666666) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 76_102/6 ≃ 12_683.666666666
+    if abs(risco_empirico(a, b, 5) - 12_683.666666666) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 9/6 = 1.5
+    if abs(risco_empirico(a, b, np.inf) - 1.5) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 22/6 ≃ 3.666666666
+    if abs(mae(a, b) - 3.666666666) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 142/6 ≃ 23.666666666
+    if abs(mse(a, b) - 23.666666666) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
