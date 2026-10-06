@@ -4,7 +4,12 @@
 import numpy as np
 
 # Aplica o somatório em uma função perda
-def perda(x, y, p):
+def perda(x: np.ndarray, y:np.ndarray, p: float | int) -> float:
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        ValueError('Os dois vetores devem ter o mesmo tamanho')
+    
     # Perdas para problemas de regressão baseadas nas normas L_p
     if isinstance(p, (int, float)):
         if p < 1:
@@ -13,29 +18,63 @@ def perda(x, y, p):
             return float(np.sum(np.abs(x-y)**p))
         else:
             return float(np.abs(x).max())
+    else:
+        TypeError('Ainda não implementado')
 
 # (Sum of Absolute Errors - Soma dos Erros Absolutos - Perda L1)
-def sae(x, y):
+def sae(x:np.ndarray, y:np.ndarray) -> float:
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        ValueError('Os dois vetores devem ter o mesmo tamanho')
+    
     return perda(x, y, 1)
 
 # (Residual Sum of Squares - Soma do Quadrado dos Resíduos - Perda L2)
-def rss(x, y):
+def rss(x:np.ndarray, y:np.ndarray) -> float:
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        ValueError('Os dois vetores devem ter o mesmo tamanho')
+    
     return perda(x, y, 2)
 
 # (Maximun Error - Erro Máximo - Perda L_inf)
-def me(x, y):
+def me(x:np.ndarray, y:np.ndarray) -> float:
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        ValueError('Os dois vetores devem ter o mesmo tamanho')
+    
     return perda(x, y, float('inf'))
 
 # Risco Empírico - Média da função perda
-def risco_empirico(x, y, p):
+def risco_empirico(x: np.ndarray, y:np.ndarray, p: float | int) -> float:
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        ValueError('Os dois vetores devem ter o mesmo tamanho')
+    
     n = x.size
     if isinstance(p, (int, float)):
         return perda(x, y, p) / n
+    else:
+        TypeError('Ainda não implementado')
 
 # (Mean Absolute Error - Erro Absoluto Médio)
-def mae(x, y):
+def mae(x:np.ndarray, y:np.ndarray) -> float:
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        ValueError('Os dois vetores devem ter o mesmo tamanho')
+
     return risco_empirico(x, y, 1)
 
 # (Mean Squared Error - Erro Quadrático Médio)
-def mse(x, y):
+def mse(x:np.ndarray, y:np.ndarray) -> float:
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        ValueError('Os dois vetores devem ter o mesmo tamanho')
+
     return risco_empirico(x, y, 2)
