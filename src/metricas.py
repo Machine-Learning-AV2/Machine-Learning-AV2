@@ -23,64 +23,30 @@ def perda(x: np.ndarray, y:np.ndarray, p: float | int) -> float:
 
 # (Sum of Absolute Errors - Soma dos Erros Absolutos - Perda L1)
 def sae(x:np.ndarray, y:np.ndarray) -> float:
-    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
-        raise TypeError('Os vetores devem ser arrays numpy')
-    if x.size != y.size:
-        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
-    
     return perda(x, y, 1)
 
 # (Residual Sum of Squares - Soma do Quadrado dos Resíduos - Perda L2)
 def rss(x:np.ndarray, y:np.ndarray) -> float:
-    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
-        raise TypeError('Os vetores devem ser arrays numpy')
-    if x.size != y.size:
-        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
-    
     return perda(x, y, 2)
 
 # (Maximun Error - Erro Máximo - Perda L_inf)
 def me(x:np.ndarray, y:np.ndarray) -> float:
-    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
-        raise TypeError('Os vetores devem ser arrays numpy')
-    if x.size != y.size:
-        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
-    
     return perda(x, y, float('inf'))
 
 # Risco Empírico - Média da função perda
 def risco_empirico(x: np.ndarray, y:np.ndarray, p: float | int) -> float:
-    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
-        raise TypeError('Os vetores devem ser arrays numpy')
-    if x.size != y.size:
-        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
-    
-    n = x.size
     if isinstance(p, (int, float)):
+        n = x.size
         return perda(x, y, p) / n
     else:
         raise TypeError('Ainda não implementado')
 
 # (Mean Absolute Error - Erro Absoluto Médio)
 def mae(x:np.ndarray, y:np.ndarray) -> float:
-    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
-        raise TypeError('Os vetores devem ser arrays numpy')
-    if x.size != y.size:
-        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
-
     return risco_empirico(x, y, 1)
 
 # (Mean Squared Error - Erro Quadrático Médio)
 def mse(x:np.ndarray, y:np.ndarray) -> float:
-    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
-        raise TypeError('Os vetores devem ser arrays numpy')
-    if x.size != y.size:
-        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
-
-    return risco_empirico(x, y, 2)
-    if x.size != y.size:
-        ValueError('Os dois vetores devem ter o mesmo tamanho')
-
     return risco_empirico(x, y, 2)
 
 # Testes para as funções criadas até o momento
