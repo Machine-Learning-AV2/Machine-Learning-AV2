@@ -25,3 +25,17 @@ def rss(x, y):
 # (Maximun Error - Erro Máximo - Perda L_inf)
 def me(x, y):
     return perda(x, y, float('inf'))
+
+# Risco Empírico - Média da função perda
+def risco_empirico(x, y, p):
+    n = x.size
+    if isinstance(p, (int, float)):
+        return perda(x, y, p) / n
+
+# (Mean Absolute Error - Erro Absoluto Médio)
+def mae(x, y):
+    return risco_empirico(x, y, 1)
+
+# (Mean Squared Error - Erro Quadrático Médio)
+def mse(x, y):
+    return risco_empirico(x, y, 2)
