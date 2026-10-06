@@ -19,8 +19,43 @@ def multi_sigmoid(scores: np.array) -> np.array:
   return probabilities
   
 class KNN():
-  def __init__(self):
+  
+  def __init__(self, K = 5):
+    self.K = K
+    self.X = None
+    self.Y = None
+
+  def distance(self):
     pass
+    # Aqui, há de se redimensionar os dados e decidir a métrica usada.
+  
+  def train(self, X, Y):
+    self.X = X
+    self.Y = Y
+
+  def predict_element(self, P):
+    neighborhood = []
+    
+    for i in range(len(self.X)):
+      d = distance(P, self.X[i])
+      if i < k:
+        neighborhood.append((d, self.Y[i]))
+      else:
+        index_max_distance = np.argmax([neighbor[0] for neighbor in neighborhood])
+        if d < neighborhood[index_max_distance][0]:
+          neighborhood[index_max_distance] = (d, self.Y[i])
+        # Verificar se não é possível otimizar esse argmax
+
+    classes = np.array([neighbor[1] for neighbor in neighborhood])
+    values, counting = np.unique(classes, return_counts=True)
+    return values[np.argmax(counting)]
+
+  def predict(self, L):
+    predictions = []
+    for P in L:
+      predictions.append(self.predict_element(P))
+    return np.array(predictions)
+
 
 class Logistic_Regression():
   
