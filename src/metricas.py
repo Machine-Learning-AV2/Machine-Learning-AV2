@@ -49,6 +49,10 @@ def mae(x:np.ndarray, y:np.ndarray) -> float:
 def mse(x:np.ndarray, y:np.ndarray) -> float:
     return risco_empirico(x, y, 2)
 
+# (Root Mean Squared Error - Raiz do Erro Quadrático Médio)
+def rmse(x:np.ndarray, y:np.ndarray) -> float:
+    return mse(x, y)**(1/2)
+
 # Testes para as funções criadas até o momento
 
 if __name__ == '__main__':
@@ -146,6 +150,13 @@ if __name__ == '__main__':
     indx += 1
     # Deve retornar 142/6 ≃ 23.666666666
     if abs(mse(a, b) - 23.666666666) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar (142/6)**(1/2) ≃ 4.864839839
+    if abs(rmse(a, b) - 4.864839839) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
