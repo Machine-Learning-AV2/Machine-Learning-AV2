@@ -74,6 +74,41 @@ class Logistic_Regression():
 
 class LDA():
   def __init__(self):
+    self.log_pi = None
+    self.means = None
+    self.sigma_inv = None
+
+  def train(self, X, Y):
+
+    # Toma a frequência de cada classe como a probabilidade desta ocorrer
+    values, counting = np.unique(Y, return_counts=True)
+    log_pi = np.log(counting/len(Y))
+
+    # Toma a média das features em cada classe
+    means = []
+    for k in values:
+      Xk = X[Y==k]
+      mean = np.mean(Xk, axis=0)
+      means.append((k, mean))
+    means = np.array(means)
+
+    # Cria a matriz de covariância sigma a partir dos dados
+    sigma_dim = np.shape(X)[1]
+    sigma = np.zeros((sigma_dim, sigma_dim))
+
+    for i, k in enumerate(values):
+      Xk = X[Y == k]
+      X_centered = Xk - means[i]
+      sigma += X_centered.T @ X_centered
+    sigma /= len(Y) - len(values)
+
+    self.log_pi = log_pi
+    self.means = means
+    self.sigma_inv = np.linalg.inv(sigma)
+    # Necessário verificar possibilidade de erro na inversão
+  
+
+  def predict(self, X):
     pass
 
 class QDA():
