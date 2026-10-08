@@ -77,6 +77,7 @@ class LDA():
     self.log_pi = None
     self.means = None
     self.sigma_inv = None
+    self.values = None
 
   def train(self, X, Y):
 
@@ -89,7 +90,7 @@ class LDA():
     for k in values:
       Xk = X[Y==k]
       mean = np.mean(Xk, axis=0)
-      means.append((k, mean))
+      means.append(mean)
     means = np.array(means)
 
     # Cria a matriz de covariância sigma a partir dos dados
@@ -105,16 +106,91 @@ class LDA():
     self.log_pi = log_pi
     self.means = means
     self.sigma_inv = np.linalg.inv(sigma)
+    self.values = values
     # Necessário verificar possibilidade de erro na inversão
-  
 
-  def predict(self, X):
-    pass
+  def aux(self, X, sigma_inv, mean, log_freq):
+    # Essa fórmula é a que deve ser maximizada pelo LDA
+    return (X.T - 1/2 * mean.T) @ sigma_inv @ mean + log_freq
+
+  def predict_element(self, P):
+    # Busca a classe que maximiza aux para esses dados novos
+    
+    vector_aux = np.zeros(len(self.values))
+    
+    for i in range(len(self.values)):
+      vector_aux[i] = self.aux(P, self.sigma_inv, self.means[i], self.log_pi[i])
+      
+    return self.values[np.argmax(vector_aux)]
+
+  def predict(self, L):
+    predictions = []
+    for P in L:
+      predictions.append(self.predict_element(P))
+    return np.array(predictions)
+      
 
 class QDA():
   def __init__(self):
-    pass
+    self.log_pi = None
+    self.means = None
+    self.sigmas = None
+    self.sigmas_inv = None
+    self.values = None
+
+  def train(self, X, Y):
+
+    # Toma a frequência de cada classe como a probabilidade desta ocorrer
+    values, counting = np.unique(Y, return_counts=True)
+    log_pi = np.log(counting/len(Y))
+
+    # Toma a média das features em cada classe
+    means = []
+    for k in values:
+      Xk = X[Y==k]
+      mean = np.mean(Xk, axis=0)
+      means.append(mean)
+    means = np.array(means)
+
+    # Cria as matrizes de covariância para cada classe
+    sigmas = []
+
+    for i, k in enumerate(values):
+      Xk = X[Y == k]
+      X_centered = Xk - means[i]
+      sigma_k = X_centered.T @ X_centered / (len(Xk)-1)
+      sigmas.append(sigma_k)
+    sigmas_inv = [np.linalg.inv(sigma) for sigma in sigmas]
     
+
+    self.log_pi = log_pi
+    self.means = means
+    self.sigmas = np.array(sigmas)
+    self.sigmas_inv = np.array(sigmas_inv)
+    self.values = values
+    # Necessário verificar possibilidade de erro na inversão
+
+  def aux(self, X, sigma, sigma_inv, mean, log_freq):
+    # Essa fórmula é a que deve ser maximizada pelo QDA
+    return -1/2 * (X - mean).T @ sigma_inv @ (X - mean) + log_freq - 1/2 * np.log(np.linalg.det(sigma))
+
+  def predict_element(self, P):
+    # Busca a classe que maximiza aux para esses dados novos
+    
+    vector_aux = np.zeros(len(self.values))
+    
+    for i in range(len(self.values)):
+      vector_aux[i] = self.aux(P, self.sigmas[i], self.sigmas_inv[i], self.means[i], self.log_pi[i])
+      
+    return self.values[np.argmax(vector_aux)]
+
+  def predict(self, L):
+    predictions = []
+    for P in L:
+      predictions.append(self.predict_element(P))
+    return np.array(predictions)
+
+
 # -----TESTES-----
 if __name__ == "__main__":
   pass
