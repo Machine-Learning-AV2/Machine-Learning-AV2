@@ -10,12 +10,11 @@ def multi_sigmoid(scores: np.array) -> np.array:
   probabilities = np.zeros(n)
   exp = 0
   
-  for i in range(n-1):
+  for i in range(n):
     exp += np.exp(scores[i])
-  for i in range(n-1):
-    probabilities[i] = np.exp(scores[i]) / (1+exp)
+  for i in range(n):
+    probabilities[i] = np.exp(scores[i]) / (exp)
     
-  probabilities[-1] = 1-np.sum(probabilities)
   return probabilities
   
 class KNN():
@@ -59,18 +58,53 @@ class KNN():
 
 class Logistic_Regression():
   
-  def __init__(self):
-    pass
+  def __init__(self, learning_rate, iterations):
+    self.beta = None
+    self.beta0 = None
+    self.values = None
+    self.alpha = learning_rate
+    self.iter = iterations
 
   def train(self, X, Y):
-    pass
+    
+    # Usa a decida de gradiente para estimar beta
+    n_samples, n_parameters = X.shape
+    self.values = np.unique(Y)
+    n_classes = len(self.values)
+    self.beta = np.zeros((n_parameters, n_classes))
+    self.beta0 = np.zeros(n_classes)
+
+    # Cria uma matriz one hot samples x classes. Marca apenas uma coluna por linha (a classs observada)
+    indices = np.searchsorted(self.values, Y)
+    T = np.eye(n_classes)[indices]
+
+    for _ in range(self.iter):
+
+      Z = X @ self.beta + self.beta0 # Soma feita através de broadcast. O resultado é uma matriz de mesmo shape que T
+      P = np.array([multi_sigmoid(z) for z in Z]) # Apenas traduz score para probabilidade em cada linha
+
+      # Fórmula dos gradientes. O termo P-T pode ser interpretado como a distância na previsão
+      grad_beta = X.T @ (P - T) / n_samples
+      grad_beta0 = np.mean(P - T, axis=0)
+
+      # Atualização dos coeficientes. o processo deve repetir a partir daqui.
+      self.beta -= self.alpha * grad_beta
+      self.beta0 -= self.alpha * grad_beta0
 
   def predict_probabilities(self, X):
-    pass
-    
-  def predict(self, X):
-    pass
+    Z = X @ self.beta + self.beta0
+    return np.array([multi_sigmoid(z) for z in Z])
 
+  def predict_element(self, P):
+    ind = np.argmax(self.predict_probabilities(P))
+    return self.values[ind]
+    
+  def predict(self, L):
+    predictions = []
+    for P in L:
+      predictions.append(self.predict_element(P))
+    return np.array(predictions)
+    
 
 class LDA():
   def __init__(self):
