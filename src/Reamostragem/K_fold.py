@@ -1,7 +1,6 @@
 import numpy as np
 from MSE import MSE
 
-
 class K_Fold:
     def __init__(self,modelo, dados_x, dados_y, k = 5):
         self.modelo = modelo
@@ -25,7 +24,3 @@ class K_Fold:
             msei = MSE(y_chapi,y_teste)
             lista.append(msei)
         return np.mean(lista)
-
-class Bootstrap:
-    def __init__(self, modelo, dados_x, dados_y):
-        pass
