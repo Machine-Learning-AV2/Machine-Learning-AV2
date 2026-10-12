@@ -18,7 +18,7 @@ class K_Fold:
             y_treino = self.dados_y[np.delete(inds,folds[i])]
             x_teste = self.dados_x[folds[i]]
             y_teste = self.dados_y[folds[i]]
-            modelo_i = self.modelo
+            modelo_i = self.modelo()
             modelo_i.train(x_treino,y_treino)
             y_chapi = modelo_i.predict(x_teste)
             msei = MSE(y_chapi,y_teste)

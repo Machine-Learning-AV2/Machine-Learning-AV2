@@ -12,7 +12,7 @@ class LOOCV:
             dados_xi = np.delete(self.dados_x,i)
             dados_yi = np.delete(self.dados_y,i)
 
-            modelo_i = self.modelo
+            modelo_i = self.modelo()
             modelo_i.train(dados_xi,dados_yi)
 
             y_chapi = modelo_i.predict(self.dados_x[i])      #i-ésimo ŷ de teste
