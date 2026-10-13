@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
     indx += 1
     # Deve retornar 2/5 = 0.4
-    if risco_empirico(c, d, 'ind') - 0.4 < tol:
+    if abs(risco_empirico(c, d, 'ind') - 0.4) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
