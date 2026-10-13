@@ -61,6 +61,19 @@ def mse(x:np.ndarray, y:np.ndarray) -> float:
 def rmse(x:np.ndarray, y:np.ndarray) -> float:
     return mse(x, y)**(1/2)
 
+# (Total Sum of Squares) - Soma dos Quadrados Total
+def tss(x:np.ndarray) -> float:
+    if not np.issubdtype(x.dtype, np.number):
+        raise TypeError('O vetor deve conter dados numéricos para a regressão')
+    return float(np.sum((x-x.mean())**2))
+
+# (R^2) - R-Quadrado
+def R2(x:np.ndarray, y:np.ndarray) -> float:
+    rss_ = rss(x, y)
+    tss_ = tss(y)
+    return 1 - (rss_/tss_)
+
+
 # Testes para as funções criadas até o momento
 
 if __name__ == '__main__':
@@ -169,6 +182,19 @@ if __name__ == '__main__':
     else:
         print(f'{indx} Não Validada')
 
+    indx += 1
+    # Deve retornar 212.833333333
+    if abs(tss(a) - 212.833333333) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar -1.062953995
+    if abs(R2(a, b) - (-1.062953995)) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
 
     c = np.array(['sim', 'sim', 'não', 'sim', 'não'])
     d = np.array(['sim', 'não', 'sim', 'sim', 'não'])
