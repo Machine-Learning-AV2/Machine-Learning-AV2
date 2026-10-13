@@ -4,11 +4,17 @@
 import numpy as np
 
 # Aplica o somatório em uma função perda
-def perda(x: np.ndarray, y:np.ndarray, p: float | int | str) -> float:
+def perda(x: np.ndarray, y:np.ndarray, p: float | int | str, l:list = [], subs: int | float = 1) -> float:
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
     if x.size != y.size:
         raise ValueError('Os dois vetores devem ter o mesmo tamanho')
+    if l != []:
+        for i in l:
+            if len(i) != 3:
+                raise TypeError('As restrições devem conter o valor previsto, o observado e o peso da penalidade (apenas)')
+    if not isinstance(subs, (int, float)):
+        raise TypeError('O valor de substituição padrão deve ser numérico')
     
     # Perdas para problemas de regressão baseadas nas normas L_p
     if isinstance(p, (int, float)):
@@ -22,10 +28,18 @@ def perda(x: np.ndarray, y:np.ndarray, p: float | int | str) -> float:
             return float(np.abs(x-y).max())
     elif p == 'ind':
         soma = 0
-        for indx in range(x.size):
-            if x[indx] != y[indx]:
-                soma += 1
-        return soma
+        l_x = [i[0] for i in l]
+        for i in range(x.size):
+            if x[i] != y[i]:
+                if x[i] in l_x:
+                    indxs = [indx for indx, x_ in enumerate(l_x) if x_ == x[i]]
+                    for j in indxs:
+                        if l[j][1] == y[i]:
+                            soma += l[j][2]
+                            break
+                else:
+                    soma += subs
+        return float(soma)
     else:
         raise TypeError('Método não implementado')
 
@@ -42,10 +56,10 @@ def me(x:np.ndarray, y:np.ndarray) -> float:
     return perda(x, y, float('inf'))
 
 # Risco Empírico - Média da função perda
-def risco_empirico(x: np.ndarray, y:np.ndarray, p: float | int | str) -> float:
+def risco_empirico(x: np.ndarray, y:np.ndarray, p: float | int | str, l:list = [], subs:float = 1) -> float:
     if isinstance(p, (int, float)) or p == 'ind':
         n = x.size
-        return perda(x, y, p) / n
+        return perda(x, y, p, l, subs) / n
     else:
         raise TypeError('Método não implementado')
 
@@ -201,7 +215,7 @@ if __name__ == '__main__':
 
     indx += 1
     # Deve retornar 2
-    if perda(c, d, 'ind') == 2:
+    if abs(perda(c, d, 'ind') - 2) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
@@ -209,6 +223,22 @@ if __name__ == '__main__':
     indx += 1
     # Deve retornar 2/5 = 0.4
     if abs(risco_empirico(c, d, 'ind') - 0.4) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    l_1 = [['sim', 'não', 2], ['não', 'sim', 1]]
+
+    indx += 1
+    # Deve retornar 3
+    if abs(perda(c, d, 'ind', l_1) - 3) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 3/5 = 0.6
+    if abs(risco_empirico(c, d, 'ind', l_1) - 0.6) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
