@@ -4,7 +4,7 @@
 import numpy as np
 
 # Aplica o somatório em uma função perda
-def perda(x: np.ndarray, y:np.ndarray, p: float | int) -> float:
+def perda(x: np.ndarray, y:np.ndarray, p: float | int | str) -> float:
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
     if x.size != y.size:
@@ -12,14 +12,22 @@ def perda(x: np.ndarray, y:np.ndarray, p: float | int) -> float:
     
     # Perdas para problemas de regressão baseadas nas normas L_p
     if isinstance(p, (int, float)):
-        if p < 1:
+        if not np.issubdtype(x.dtype, np.number) and not np.issubdtype(y.dtype, np.number):
+            raise TypeError('Os vetores devem conter dados numéricos para a regressão')
+        elif p < 1:
             raise ValueError('O valor do parâmetro deve ser maior ou igual a 1')
         elif p < float('inf'):
             return float(np.sum(np.abs(x-y)**p))
         else:
             return float(np.abs(x-y).max())
+    elif p == 'ind':
+        soma = 0
+        for indx in range(x.size):
+            if x[indx] != y[indx]:
+                soma += 1
+        return soma
     else:
-        raise TypeError('Ainda não implementado')
+        raise TypeError('Método não implementado')
 
 # (Sum of Absolute Errors - Soma dos Erros Absolutos - Perda L1)
 def sae(x:np.ndarray, y:np.ndarray) -> float:
@@ -34,12 +42,12 @@ def me(x:np.ndarray, y:np.ndarray) -> float:
     return perda(x, y, float('inf'))
 
 # Risco Empírico - Média da função perda
-def risco_empirico(x: np.ndarray, y:np.ndarray, p: float | int) -> float:
-    if isinstance(p, (int, float)):
+def risco_empirico(x: np.ndarray, y:np.ndarray, p: float | int | str) -> float:
+    if isinstance(p, (int, float)) or p == 'ind':
         n = x.size
         return perda(x, y, p) / n
     else:
-        raise TypeError('Ainda não implementado')
+        raise TypeError('Método não implementado')
 
 # (Mean Absolute Error - Erro Absoluto Médio)
 def mae(x:np.ndarray, y:np.ndarray) -> float:
@@ -157,6 +165,24 @@ if __name__ == '__main__':
     indx += 1
     # Deve retornar (142/6)**(1/2) ≃ 4.864839839
     if abs(rmse(a, b) - 4.864839839) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+
+    c = np.array(['sim', 'sim', 'não', 'sim', 'não'])
+    d = np.array(['sim', 'não', 'sim', 'sim', 'não'])
+
+    indx += 1
+    # Deve retornar 2
+    if perda(c, d, 'ind') == 2:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 2/5 = 0.4
+    if risco_empirico(c, d, 'ind') - 0.4 < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
