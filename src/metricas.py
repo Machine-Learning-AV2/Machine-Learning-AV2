@@ -4,7 +4,7 @@
 import numpy as np
 
 # Aplica o somatório em uma função perda
-def perda(x: np.ndarray, y:np.ndarray, p: float | int | str, l:list = [], subs: int | float = 1) -> float:
+def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 1) -> float:
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
     if x.size != y.size:
@@ -18,7 +18,7 @@ def perda(x: np.ndarray, y:np.ndarray, p: float | int | str, l:list = [], subs: 
     
     # Perdas para problemas de regressão baseadas nas normas L_p
     if isinstance(p, (int, float)):
-        if not np.issubdtype(x.dtype, np.number) and not np.issubdtype(y.dtype, np.number):
+        if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
             raise TypeError('Os vetores devem conter dados numéricos para a regressão')
         elif p < 1:
             raise ValueError('O valor do parâmetro deve ser maior ou igual a 1')
@@ -26,6 +26,8 @@ def perda(x: np.ndarray, y:np.ndarray, p: float | int | str, l:list = [], subs: 
             return float(np.sum(np.abs(x-y)**p))
         else:
             return float(np.abs(x-y).max())
+
+    # Perda com a função indicadora
     elif p == 'ind':
         soma = 0
         l_x = [i[0] for i in l]
@@ -56,8 +58,14 @@ def me(x:np.ndarray, y:np.ndarray) -> float:
     return perda(x, y, float('inf'))
 
 # Risco Empírico - Média da função perda
-def risco_empirico(x: np.ndarray, y:np.ndarray, p: float | int | str, l:list = [], subs:float = 1) -> float:
-    if isinstance(p, (int, float)) or p == 'ind':
+def risco_empirico(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 1) -> float:
+    if isinstance(p, (int, float)):
+        if p < float('inf'):
+            n = x.size
+            return perda(x, y, p, l, subs) / n
+        else:
+            raise ValueError('O parâmetro deve ser um valor finito')
+    elif p == 'ind':
         n = x.size
         return perda(x, y, p, l, subs) / n
     else:
@@ -164,13 +172,6 @@ if __name__ == '__main__':
     indx += 1
     # Deve retornar 76_102/6 ≃ 12_683.666666666
     if abs(risco_empirico(a, b, 5) - 12_683.666666666) < tol:
-        print(f'{indx} Validada')
-    else:
-        print(f'{indx} Não Validada')
-
-    indx += 1
-    # Deve retornar 9/6 = 1.5
-    if abs(risco_empirico(a, b, np.inf) - 1.5) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
