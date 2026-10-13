@@ -95,6 +95,28 @@ def R2(x:np.ndarray, y:np.ndarray) -> float:
     tss_ = tss(y)
     return 1 - (rss_/tss_)
 
+# Norma Lp de um vetor
+def norma_lp(x:np.ndarray, p:float) -> float:
+    if not isinstance(x, np.ndarray):
+        raise TypeError('O vetor deve ser um array numpy')
+    if not np.issubdtype(x.dtype, np.number):
+        raise TypeError('O vetor deve conter dados numéricos para a norma')
+    if isinstance(p, (float, int)):
+        if p < 1:
+            raise ValueError('O valor do parâmetro deve ser maior ou igual a 1')
+        if p < float('inf'):
+            return float(np.sum(np.abs(x)**p)**(1/p))
+        else:
+            return float(np.abs(x).max())
+    else:
+        raise TypeError('O parâmetro deve ser um dado numérico (>=1)')
+
+# Distância entre dois vetores baseada na norma Lp
+def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
+    if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
+        raise TypeError('Os vetores devem conter dados numéricos para a norma')
+    return norma_lp(x-y, p)
+
 
 # Testes para as funções criadas até o momento
 
@@ -211,6 +233,34 @@ if __name__ == '__main__':
     else:
         print(f'{indx} Não Validada')
 
+    indx += 1
+    # Deve retornar 49
+    if abs(norma_lp(a, 1) - 49) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar (229)**(1/2) ≃ 15.132745950
+    if abs(norma_lp(b, 2) - 15.132745950) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar (142)**(1/2) ≃ 11.916375287
+    if abs(dist(a, b, 2) - 11.916375287) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
+    indx += 1
+    # Deve retornar 9
+    if abs(dist(a, b, np.inf) - 9) < tol:
+        print(f'{indx} Validada')
+    else:
+        print(f'{indx} Não Validada')
+
     c = np.array(['sim', 'sim', 'não', 'sim', 'não'])
     d = np.array(['sim', 'não', 'sim', 'sim', 'não'])
 
@@ -243,3 +293,4 @@ if __name__ == '__main__':
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
+    """
