@@ -24,7 +24,7 @@ class KNN():
     self.X = None
     self.Y = None
 
-  def distance(self):
+  def distance(self, P1, P2):
     pass
     # Aqui, há de se redimensionar os dados e decidir a métrica usada.
   
@@ -36,8 +36,8 @@ class KNN():
     neighborhood = []
     
     for i in range(len(self.X)):
-      d = distance(P, self.X[i])
-      if i < k:
+      d = self.distance(P, self.X[i])
+      if i < self.K:
         neighborhood.append((d, self.Y[i]))
       else:
         index_max_distance = np.argmax([neighbor[0] for neighbor in neighborhood])
@@ -58,12 +58,13 @@ class KNN():
 
 class Logistic_Regression():
   
-  def __init__(self, learning_rate, iterations):
+  def __init__(self, learning_rate = 0.01, iterations = 1000, intercept=True):
     self.beta = None
     self.beta0 = None
     self.values = None
     self.alpha = learning_rate
     self.iter = iterations
+    self.intercept = intercept
 
   def train(self, X, Y):
     
@@ -72,7 +73,7 @@ class Logistic_Regression():
     self.values = np.unique(Y)
     n_classes = len(self.values)
     self.beta = np.zeros((n_parameters, n_classes))
-    self.beta0 = np.zeros(n_classes)
+    self.beta0 = np.zeros(n_classes) if self.intercept else None
 
     # Cria uma matriz one hot samples x classes. Marca apenas uma coluna por linha (a classs observada)
     indices = np.searchsorted(self.values, Y)
@@ -80,7 +81,9 @@ class Logistic_Regression():
 
     for _ in range(self.iter):
 
-      Z = X @ self.beta + self.beta0 # Soma feita através de broadcast. O resultado é uma matriz de mesmo shape que T
+      Z = X @ self.beta # Soma feita através de broadcast. O resultado é uma matriz de mesmo shape que T
+      if self.intercept:
+        Z += self.beta0
       P = np.array([multi_sigmoid(z) for z in Z]) # Apenas traduz score para probabilidade em cada linha
 
       # Fórmula dos gradientes. O termo P-T pode ser interpretado como a distância na previsão
@@ -92,8 +95,10 @@ class Logistic_Regression():
       self.beta0 -= self.alpha * grad_beta0
 
   def predict_probabilities(self, X):
-    Z = X @ self.beta + self.beta0
-    return np.array([multi_sigmoid(z) for z in Z])
+    Z = X @ self.beta
+    if self.intercept:
+      Z += self.beta0
+    return multi_sigmoid(Z)
 
   def predict_element(self, P):
     ind = np.argmax(self.predict_probabilities(P))
@@ -226,5 +231,53 @@ class QDA():
 
 
 # -----TESTES-----
-if __name__ == "__main__":
-  pass
+print(sigmoid(0))
+print(sigmoid(1))
+print(sigmoid(-1))
+
+n = np.array([1, 1, 1])
+print(multi_sigmoid(n))
+
+n = np.array([2, 1, 1])
+print(multi_sigmoid(n))
+
+n = np.array([1, 2, 2])
+print(multi_sigmoid(n))
+
+n = np.array([1, 3, 1])
+print(multi_sigmoid(n))
+
+n = np.array([1.5, 1, 0, -1, -1.5])
+print(multi_sigmoid(n))
+
+n = np.array([5])
+print(multi_sigmoid(n))
+
+n = np.array([1, 1.01])
+print(multi_sigmoid(n))
+
+X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7]])
+Y = np.array(["Red", "Red", "Blue", "Blue", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green"])
+X_teste = np.array([[0, 0], [3, 3], [-2, 0], [-4, 6], [0, -4]])
+
+model = Logistic_Regression()
+model.train(X, Y)
+print(model.predict(X_teste))
+
+model1 = KNN()
+model2 = KNN(K=1)
+model3 = KNN(K=10)
+model1.train(X, Y)
+model2.train(X, Y)
+model3.train(X, Y)
+print(model1.predict(X_teste))
+print(model2.predict(X_teste))
+print(model3.predict(X_teste))
+
+model = LDA()
+model.train(X, Y)
+print(model.predict(X_teste))
+
+model = LDA()
+model.train(X, Y)
+print(model.predict(X_teste)) # Erro de covariância
