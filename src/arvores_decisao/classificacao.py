@@ -95,7 +95,31 @@ class ArvoresDecisaoClassificacao:
 
      return self
 
-     
+  def _prever_amostra(self,x,no):
+    if no["folha"]:
+      return no["valor"]
+
+    j = no["caracteristica"]
+
+    if x[j]<=no["limite"]:
+      return self._prever_amostra(x,no["esquerda"]
+
+     return self._prever_amostra(x,no["direita"])
+
+
+  def prever(self,X):
+    if self.raiz is None:
+      riase ValueError("A arvore de decisão precisa treinada antes de prever")
+
+    X=np.asarray(X,dtype=float)
+
+    if X.ndim!=2:
+      raise ValueError("X deve ser uma matriz BI")
+
+    previsoes = [
+      self._prever_amostra(x,self.raiz)
+      for x in X
+    ]
 
   
  
