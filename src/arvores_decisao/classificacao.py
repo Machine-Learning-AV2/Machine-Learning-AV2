@@ -5,6 +5,7 @@ class ArvoresDecisaoClassificacao:
     self.max_profundidade = max_profundidade
     self.min_amostras = min_amostras
     self.raiz = None
+    self.n_caracteristicas = None
 
   def _gini(self,y):
     if len(y) == 0:
@@ -12,6 +13,7 @@ class ArvoresDecisaoClassificacao:
       
     _, contagens = np.unique(y, return_counts=True)
     probabilidades = contagens / len(y)
+    return 1.0 - np.sum(probabilidades**2)
 
   def _melhor_divisao(self,X,y):
     n_amostras, n_caracteristicas = X.shape
@@ -23,7 +25,7 @@ class ArvoresDecisaoClassificacao:
       limites = (valores[:-1]+valores[1:])/2
       
       for limite in limites:
-        masacara_esquerda = X[:,j]<= limite
+        mascara_esquerda = X[:,j]<= limite
         y_esquerda = y[mascara_esquerda]
         y_direita = y[~mascara_esquerda]
 
@@ -49,7 +51,7 @@ class ArvoresDecisaoClassificacao:
     classe_majoritaria = classes[np.argmax(contagens)]
 
     if (len(classes)) ==1:
-      or profunidade >=self.max_profunidade
+      or profundidade >=self.max_profundidade
       or len(y) < self.min_amostras):
       return {"folha":True, "Valor": classe_majoritaria}
 
@@ -68,7 +70,7 @@ class ArvoresDecisaoClassificacao:
         X[mascara], y[mascara], profundidade+1
       ),
       "direita": self._cosntruir_arvore(
-        X[~mascara], y[~mascara],profunidade+1
+        X[~mascara], y[~mascara],profundidade+1
       )
     }
 
@@ -77,7 +79,7 @@ class ArvoresDecisaoClassificacao:
      y = np.asarray(y)
 
      if X.ndim!=2:
-       raise ValueError("X deve ser uma matriz BI"
+       raise ValueError("X deve ser uma matriz BI")
 
      if y.ndim!=1:
        raise ValueError("y deve ser um vetor UNI")
@@ -120,7 +122,7 @@ class ArvoresDecisaoClassificacao:
       self._prever_amostra(x,self.raiz)
       for x in X
     ]
-
+    return np,asarray(previsoes)
   
  if __name__ == "__main__":
    X = np.array([1], [2], [3], [4])
