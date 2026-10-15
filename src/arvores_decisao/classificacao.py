@@ -30,8 +30,8 @@ class ArvoresDecisaoClassificacao:
         n_esquerda = len(y_esquerda)
         n_direita = len(y_direita)
 
-        gini_esquerda = self.gini(y_esquerda)
-        gini_direita = self.gini(y_direita)
+        gini_esquerda = self._gini(y_esquerda)
+        gini_direita = self._gini(y_direita)
 
         gini_ponderado = (
           (n_esquerda/n_amostras)*gini_esquerda
@@ -86,7 +86,7 @@ class ArvoresDecisaoClassificacao:
        raise ValueError("X e y devem ter o mesmo número de exemplos")
 
      if len(y) == 0:
-       raise valueError("os dados de treinamento nao podem estar vazios")
+       raise ValueError("os dados de treinamento nao podem estar vazios")
 
      if X.shape[1] == 0:
        raise ValueError("X deve ter pelo menos uma caracteristica")
@@ -109,7 +109,7 @@ class ArvoresDecisaoClassificacao:
 
   def prever(self,X):
     if self.raiz is None:
-      riase ValueError("A arvore de decisão precisa treinada antes de prever")
+      raise ValueError("A arvore de decisão precisa treinada antes de prever")
 
     X=np.asarray(X,dtype=float)
 
@@ -122,9 +122,12 @@ class ArvoresDecisaoClassificacao:
     ]
 
   
- 
-    
+ if __name__ == "__main__":
+   X = np.array([1], [2], [3], [4])
+   y = np.array("A", "A", "B", "B")
 
+   modelo = ArvoreDecisaoClassificacao()
+   modelo.ajustar(X,y)
 
-
-
+   print("Classificação")
+   print(modelo.prever(X))
