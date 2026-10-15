@@ -1,5 +1,32 @@
 import numpy as np
 
+# Verifica se os dados de input para treino possuem algum erro
+def train_check(X, Y):
+  if not isinstance(X, np.ndarray):
+      raise TypeError("X must be numpy array")
+  if not isinstance(Y, np.ndarray):
+      raise TypeError("Y must be numpy array")
+  if X.ndim != 2:
+      raise ValueError("X must be 2D array")
+  if Y.ndim != 1:
+      raise ValueError("Y must be 1D array")
+  if X.shape[0] != Y.shape[0]:
+      raise ValueError("X and Y must have the same lenght")
+  if X.shape[0] == 0:
+      raise ValueError("Data must be not empty")
+  if X.shape[1] == 0:
+      raise ValueError("Samples must have at least one feature")
+  if not np.issubdtype(X.dtype, np.number):
+      raise TypeError("X must contain numeric values")
+    
+def predict_element_check(P, n_features):
+  if P.ndim != 1:
+      raise ValueError("Input must be 1D")
+  if P.shape[-1] != n_features:
+      raise ValueError("Test and train must contain same number of features")
+  if not np.issubdtype(P.dtype, np.number):
+      raise TypeError("Input must contain numerical values")
+    
 # Converte um valor real em um valor no intervalo (0, 1)
 def sigmoid(z: float) -> float:
   return 1/(1+np.exp(-z))
@@ -20,6 +47,11 @@ def multi_sigmoid(scores: np.array) -> np.array:
 class KNN():
   
   def __init__(self, K = 5):
+    if not isinstance(K, (int, np.integer)):
+      raise TypeError("K must be integer number")
+    if K <= 0:
+      raise ValueError("K must be positive number")
+    
     self.K = K
     self.X = None
     self.Y = None
@@ -29,10 +61,14 @@ class KNN():
     # Aqui, há de se redimensionar os dados e decidir a métrica usada.
   
   def train(self, X, Y):
+    train_check(X, Y)
     self.X = X
     self.Y = Y
 
   def predict_element(self, P):
+    if self.X is None:
+      raise TypeError("The model must be trained")
+    
     neighborhood = []
     
     for i in range(len(self.X)):
@@ -67,6 +103,7 @@ class Logistic_Regression():
     self.intercept = intercept
 
   def train(self, X, Y):
+    train_check(X, Y)
     
     # Usa a decida de gradiente para estimar beta
     n_samples, n_parameters = X.shape
@@ -92,7 +129,8 @@ class Logistic_Regression():
 
       # Atualização dos coeficientes. o processo deve repetir a partir daqui.
       self.beta -= self.alpha * grad_beta
-      self.beta0 -= self.alpha * grad_beta0
+      if self.intercept:
+        self.beta0 -= self.alpha * grad_beta0
 
   def predict_probabilities(self, X):
     Z = X @ self.beta
@@ -101,10 +139,13 @@ class Logistic_Regression():
     return multi_sigmoid(Z)
 
   def predict_element(self, P):
+    predict_element_check(P, self.beta.shape[0])
     ind = np.argmax(self.predict_probabilities(P))
     return self.values[ind]
     
   def predict(self, L):
+    if self.beta is None:
+      raise TypeError("The model must be trained")
     predictions = []
     for P in L:
       predictions.append(self.predict_element(P))
@@ -119,7 +160,8 @@ class LDA():
     self.values = None
 
   def train(self, X, Y):
-
+    train_check(X, Y)
+    
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
     log_pi = np.log(counting/len(Y))
@@ -153,8 +195,9 @@ class LDA():
     return (X.T - 1/2 * mean.T) @ sigma_inv @ mean + log_freq
 
   def predict_element(self, P):
-    # Busca a classe que maximiza aux para esses dados novos
+    predict_element_check(P, self.means.shape[1])
     
+    # Busca a classe que maximiza aux para esses dados novos
     vector_aux = np.zeros(len(self.values))
     
     for i in range(len(self.values)):
@@ -163,6 +206,9 @@ class LDA():
     return self.values[np.argmax(vector_aux)]
 
   def predict(self, L):
+    if self.means is None:
+      raise TypeError("The model must be trained")
+      
     predictions = []
     for P in L:
       predictions.append(self.predict_element(P))
@@ -178,6 +224,7 @@ class QDA():
     self.values = None
 
   def train(self, X, Y):
+    train_check(X, Y)
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
@@ -214,8 +261,9 @@ class QDA():
     return -1/2 * (X - mean).T @ sigma_inv @ (X - mean) + log_freq - 1/2 * np.log(np.linalg.det(sigma))
 
   def predict_element(self, P):
-    # Busca a classe que maximiza aux para esses dados novos
+    predict_element_check(P, self.means.shape[1])
     
+    # Busca a classe que maximiza aux para esses dados novos
     vector_aux = np.zeros(len(self.values))
     
     for i in range(len(self.values)):
@@ -224,6 +272,9 @@ class QDA():
     return self.values[np.argmax(vector_aux)]
 
   def predict(self, L):
+    if self.means is None:
+      raise TypeError("The model must be trained")
+      
     predictions = []
     for P in L:
       predictions.append(self.predict_element(P))
@@ -278,6 +329,6 @@ model = LDA()
 model.train(X, Y)
 print(model.predict(X_teste))
 
-model = LDA()
+mode1 = QDA()
 model.train(X, Y)
 print(model.predict(X_teste)) # Erro de covariância
