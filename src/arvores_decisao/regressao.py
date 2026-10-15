@@ -12,7 +12,7 @@ class ArvoreDecisaoRegressao:
     return np.mean((y-media)**2)
 
   
-  def _melhor_divisão(self,X,y):
+  def _melhor_divisao(self,X,y):
     n_amostras, n_caracteristicas = X.shape
     melhor_erro = self._mse(y)
     melhor_divisao = None
@@ -38,14 +38,14 @@ class ArvoreDecisaoRegressao:
           melhor_erro = erro_ponderado
           melhor_divisao = (j, limite)
 
-     return melhor_divisao
+  return melhor_divisao
 
 
-  def _construir_arvore(self,X,y, profunidade = 0):
+  def _construir_arvore(self,X,y, profundidade = 0):
      media = float(np.mean(y))
 
      if (
-       profundidade > self.max_profundidade
+       profundidade >= self.max_profundidade
        or len(y) < self.min_amostras
        or np.all(y==y[0])
      ):
@@ -57,14 +57,14 @@ class ArvoreDecisaoRegressao:
        return {"folha": True, "valor": media}
 
      j, limite = divisao 
-     mascara = X[:,j] <= limite ]
+     mascara = X[:,j] <= limite
 
      return {
        "folha":False,
        "caracteristicas: j,
        "limite": limite,
        "esquerda": self._construir_arvore(
-         X[mascara], y[mascara], profundiade+1
+         X[mascara], y[mascara], profundidade+1
        ),
        "direita" = self._construir_arvore(
          X[~mascara], y[~mascara], profundidade+1
@@ -74,7 +74,7 @@ class ArvoreDecisaoRegressao:
 
   def ajustar(self,X,y):
     X= np.asarray(X, dtype=float)
-    y= np.asarray(y. dtype=float)
+    y= np.asarray(y, dtype=float)
 
     if X.ndim!=2:
       raise ValueError("X deve ser armazenada em uma matriz BI")
@@ -104,7 +104,7 @@ class ArvoreDecisaoRegressao:
    if x[j] <= no["limite"]:
      return self._prever_amostra(x, no["esquerda"])
 
-   return self._prever_amostra(x, no["direita"]
+   return self._prever_amostra(x, no["direita"])
 
 def prever(self, X):
   if self.raiz is None:
@@ -126,10 +126,10 @@ def prever(self, X):
  return np.asarray(previsoes)
 
 if __name__ == "__main__":
-  X_reg = np.array([1], [2,], [3], [4])
-  y_reg = np.array(10.0, 20.0, 30.0, 40.0)
+  X_reg = np.array([[1], [2,], [3], [4]])
+  y_reg = np.array[10.0, 20.0, 30.0, 40.0])
 
-  modelo_reg = ArvoresDecisaoRegressao(max_profundidade=3, min_amostras=2)
+  modelo_reg = ArvoreDecisaoRegressao(max_profundidade=3, min_amostras=2)
   modelo_reg.ajustar(X_reg, y_reg)
 
  print(modelo_reg.prever(X_reg))
