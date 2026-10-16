@@ -5,6 +5,37 @@ import numpy as np
 
 # Aplica o somatório em uma função perda
 def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 1) -> float:
+
+    """Retorna o valor da soma de uma função perda para um vetor de valores previstos e observados
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados;
+    p : Parâmetro que define a função perda;
+    l : Matriz de pesos para erros de classificação via função indicadora;
+    subs : Valor de peso padrão para casos não listados na matriz l.
+
+    Funções perda implementadas
+    ----------------------------
+    p (numérico) = |y - x|^p;  
+    p ('ind') = k se (y != x).
+
+    Matriz de pesos
+    ----------------
+    l deve ser uma matriz com 3 colunas, de modo que para cada linha:
+    O primeiro elemento deve ser o valor para x;
+    O segundo elemento deve ser o valor para y;
+    O terceiro elemento deve ser o valor k retornado pela função nesse caso.
+
+    Exemplos
+    ---------
+    >>> x = np.array([1, 2, 4])
+    >>> y = np.array([1, 3, 5])
+    >>> perda(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2) = 2
+    >>> l = [[2, 3, 2]] # O peso em classificar x = 2 enquanto y = 3 é 2
+    >>> perda(x, y, 'ind', l, 3) # Classificar errado nos demais casos tem peso 3"""
+    
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
     if x.size != y.size:
@@ -23,9 +54,9 @@ def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 
         elif p < 1:
             raise ValueError('O valor do parâmetro deve ser maior ou igual a 1')
         elif p < float('inf'):
-            return float(np.sum(np.abs(x-y)**p))
+            return float(np.sum(np.abs(y-x)**p))
         else:
-            return float(np.abs(x-y).max())
+            return float(np.abs(y-x).max())
 
     # Perda com a função indicadora
     elif p == 'ind':
@@ -45,20 +76,74 @@ def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 
     else:
         raise TypeError('Método não implementado')
 
-# (Sum of Absolute Errors - Soma dos Erros Absolutos - Perda L1)
+# (Sum of Absolute Errors - Soma dos Erros Absolutos - Perda L_1)
 def sae(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna a soma de |y_i-x_i| para todo y_i em y e x_i em x
+
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
     return perda(x, y, 1)
 
-# (Residual Sum of Squares - Soma do Quadrado dos Resíduos - Perda L2)
+# (Residual Sum of Squares - Soma do Quadrado dos Resíduos - Perda L_2)
 def rss(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna a soma de |y_i-x_i|^2 para todo y_i em y e x_i em x
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
     return perda(x, y, 2)
 
 # (Maximun Error - Erro Máximo - Perda L_inf)
 def me(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna o max{|y_i-x_i|} para todo y_i em y e x_i em x
+
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
     return perda(x, y, float('inf'))
 
 # Risco Empírico - Média da função perda
 def risco_empirico(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 1) -> float:
+
+    """Retorna o valor do risco empírico de uma previsão segundo a função perda desejada
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados;
+    p : Parâmetro que define a função perda;
+    l : Matriz de pesos para erros de classificação via função indicadora;
+    subs : Valor de peso padrão para casos não listados na matriz l.
+
+    Funções perda implementadas
+    ----------------------------
+    p (numérico) = |y - x|^p;  
+    p ('ind') = k se (y != x).
+
+    Matriz de pesos
+    ----------------
+    l deve ser uma matriz com 3 colunas, de modo que para cada linha:
+    O primeiro elemento deve ser o valor para x;
+    O segundo elemento deve ser o valor para y;
+    O terceiro elemento deve ser o valor k retornado pela função nesse caso.
+
+    Exemplos
+    ---------
+    >>> x = np.array([1, 2, 4])
+    >>> y = np.array([1, 3, 5])
+    >>> risco_empirico(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2)/3 ≃ 0.666...
+    >>> perda(x, y, 'ind', subs = 3) # Retorna (0 + 3 + 3)/3 = 2"""
+
     if isinstance(p, (int, float)):
         if p < float('inf'):
             n = x.size
@@ -73,30 +158,77 @@ def risco_empirico(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs
 
 # (Mean Absolute Error - Erro Absoluto Médio)
 def mae(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna a soma de |y_i-x_i|/n para todo y_i em y e x_i em x
+
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
     return risco_empirico(x, y, 1)
 
 # (Mean Squared Error - Erro Quadrático Médio)
 def mse(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna a soma de (|y_i-x_i|^2)/n para todo y_i em y e x_i em x
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
     return risco_empirico(x, y, 2)
 
 # (Root Mean Squared Error - Raiz do Erro Quadrático Médio)
 def rmse(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna a raiz da soma de |y_i-x_i|^2 para todo y_i em y e x_i em x
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
     return mse(x, y)**(1/2)
 
 # (Total Sum of Squares) - Soma dos Quadrados Total
 def tss(x:np.ndarray) -> float:
+
+    """Retorna a soma de |x_i - (média de x)|^2 para todo x_i em x
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém valores numéricos."""
+
     if not np.issubdtype(x.dtype, np.number):
-        raise TypeError('O vetor deve conter dados numéricos para a regressão')
+        raise TypeError('O vetor deve conter dados numéricos')
     return float(np.sum((x-x.mean())**2))
 
 # (R^2) - R-Quadrado
 def R2(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna o valor R^2 para a previsão do modelo
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
     rss_ = rss(x, y)
     tss_ = tss(y)
     return 1 - (rss_/tss_)
 
 # Norma Lp de um vetor
 def norma_lp(x:np.ndarray, p:float) -> float:
+
+    """Retorna a norma L_p de um vetor
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém valores numéricos;
+    p : Parâmetro que define a norma."""
+
     if not isinstance(x, np.ndarray):
         raise TypeError('O vetor deve ser um array numpy')
     if not np.issubdtype(x.dtype, np.number):
@@ -113,9 +245,18 @@ def norma_lp(x:np.ndarray, p:float) -> float:
 
 # Distância entre dois vetores baseada na norma Lp
 def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
+
+    """Retorna a distância entre dois vetores usando a norma L_p
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém valores numéricos;
+    y : Vetor que contém valores numéricos;
+    p : Parâmetro que define a norma."""
+
     if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
         raise TypeError('Os vetores devem conter dados numéricos para a norma')
-    return norma_lp(x-y, p)
+    return norma_lp(y-x, p)
 
 
 # Testes para as funções criadas até o momento
@@ -293,4 +434,3 @@ if __name__ == '__main__':
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
-    """
