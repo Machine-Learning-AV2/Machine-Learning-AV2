@@ -6,10 +6,12 @@ class Regressao:
 
     def fit(self, X, y):
         """Treina o modelo com X e y."""
-        pass
+        raise NotImplementedError("O método fit deve ser implementado na subclasse.")
+        
 
     def predict(self, X):
         """Retorna a previsão com base no modelo."""
         if self.coeficientes is None:
             raise RuntimeError("O modelo ainda não foi treinado.")
-        pass
+
+        raise NotImplementedError("O método predict deve ser implementado na subclasse.")

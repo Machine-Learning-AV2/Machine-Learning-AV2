@@ -8,7 +8,7 @@ class MinimosQuadrados(Regressao):
         
         X_design = np.column_stack([np.ones(X.shape[0]), X]);
 
-        beta = np.linalg.inv(X_design.T @ X_design) @ X_design.T @ y
+        beta, *_ = np.linalg.lstsq(X_design, y, rcond=None)
 
         self.coeficientes = beta
 
