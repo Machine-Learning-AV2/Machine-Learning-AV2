@@ -18,7 +18,7 @@ def train_check(X, Y):
       raise ValueError("Samples must have at least one feature")
   if not np.issubdtype(X.dtype, np.number):
       raise TypeError("X must contain numeric values")
-    
+
 def predict_element_check(P, n_features):
   if P.ndim != 1:
       raise ValueError("Input must be 1D")
@@ -26,40 +26,40 @@ def predict_element_check(P, n_features):
       raise ValueError("Test and train must contain same number of features")
   if not np.issubdtype(P.dtype, np.number):
       raise TypeError("Input must contain numerical values")
-    
+
 # Converte um valor real em um valor no intervalo (0, 1)
 def sigmoid(z: float) -> float:
   return 1/(1+np.exp(-z))
 
 # Versão do sigmoide para mais variáveis (scores). A soma total de probabilities deve ser 1.
-def multi_sigmoid(scores: np.array) -> np.array:
+def softmax(scores: np.array) -> np.array:
   n = len(scores)
   probabilities = np.zeros(n)
   exp = 0
-  
+
   for i in range(n):
     exp += np.exp(scores[i])
   for i in range(n):
     probabilities[i] = np.exp(scores[i]) / (exp)
-    
+
   return probabilities
-  
+
 class KNN():
-  
+
   def __init__(self, K = 5):
     if not isinstance(K, (int, np.integer)):
       raise TypeError("K must be integer number")
     if K <= 0:
       raise ValueError("K must be positive number")
-    
+
     self.K = K
     self.X = None
     self.Y = None
 
   def distance(self, P1, P2):
-    pass
+    return np.linalg.norm(P1-P2)
     # Aqui, há de se redimensionar os dados e decidir a métrica usada.
-  
+
   def train(self, X, Y):
     train_check(X, Y)
     self.X = X
@@ -68,9 +68,9 @@ class KNN():
   def predict_element(self, P):
     if self.X is None:
       raise TypeError("The model must be trained")
-    
+
     neighborhood = []
-    
+
     for i in range(len(self.X)):
       d = self.distance(P, self.X[i])
       if i < self.K:
@@ -79,7 +79,6 @@ class KNN():
         index_max_distance = np.argmax([neighbor[0] for neighbor in neighborhood])
         if d < neighborhood[index_max_distance][0]:
           neighborhood[index_max_distance] = (d, self.Y[i])
-        # Verificar se não é possível otimizar esse argmax
 
     classes = np.array([neighbor[1] for neighbor in neighborhood])
     values, counting = np.unique(classes, return_counts=True)
@@ -93,7 +92,7 @@ class KNN():
 
 
 class Logistic_Regression():
-  
+
   def __init__(self, learning_rate = 0.01, iterations = 1000, intercept=True):
     self.beta = None
     self.beta0 = None
@@ -104,7 +103,7 @@ class Logistic_Regression():
 
   def train(self, X, Y):
     train_check(X, Y)
-    
+
     # Usa a decida de gradiente para estimar beta
     n_samples, n_parameters = X.shape
     self.values = np.unique(Y)
@@ -121,7 +120,7 @@ class Logistic_Regression():
       Z = X @ self.beta # Soma feita através de broadcast. O resultado é uma matriz de mesmo shape que T
       if self.intercept:
         Z += self.beta0
-      P = np.array([multi_sigmoid(z) for z in Z]) # Apenas traduz score para probabilidade em cada linha
+      P = np.array([softmax(z) for z in Z]) # Apenas traduz score para probabilidade em cada linha
 
       # Fórmula dos gradientes. O termo P-T pode ser interpretado como a distância na previsão
       grad_beta = X.T @ (P - T) / n_samples
@@ -136,13 +135,13 @@ class Logistic_Regression():
     Z = X @ self.beta
     if self.intercept:
       Z += self.beta0
-    return multi_sigmoid(Z)
+    return softmax(Z)
 
   def predict_element(self, P):
     predict_element_check(P, self.beta.shape[0])
     ind = np.argmax(self.predict_probabilities(P))
     return self.values[ind]
-    
+
   def predict(self, L):
     if self.beta is None:
       raise TypeError("The model must be trained")
@@ -150,7 +149,7 @@ class Logistic_Regression():
     for P in L:
       predictions.append(self.predict_element(P))
     return np.array(predictions)
-    
+
 
 class LDA():
   def __init__(self):
@@ -161,7 +160,7 @@ class LDA():
 
   def train(self, X, Y):
     train_check(X, Y)
-    
+
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
     log_pi = np.log(counting/len(Y))
@@ -175,6 +174,8 @@ class LDA():
     means = np.array(means)
 
     # Cria a matriz de covariância sigma a partir dos dados
+    if len(Y) <= len(values):
+      raise ValueError("There's no suficcient information to training LDA (need more samples than classes)")
     sigma_dim = np.shape(X)[1]
     sigma = np.zeros((sigma_dim, sigma_dim))
 
@@ -188,7 +189,6 @@ class LDA():
     self.means = means
     self.sigma_inv = np.linalg.inv(sigma)
     self.values = values
-    # Necessário verificar possibilidade de erro na inversão
 
   def aux(self, X, sigma_inv, mean, log_freq):
     # Essa fórmula é a que deve ser maximizada pelo LDA
@@ -196,24 +196,24 @@ class LDA():
 
   def predict_element(self, P):
     predict_element_check(P, self.means.shape[1])
-    
+
     # Busca a classe que maximiza aux para esses dados novos
     vector_aux = np.zeros(len(self.values))
-    
+
     for i in range(len(self.values)):
       vector_aux[i] = self.aux(P, self.sigma_inv, self.means[i], self.log_pi[i])
-      
+
     return self.values[np.argmax(vector_aux)]
 
   def predict(self, L):
     if self.means is None:
       raise TypeError("The model must be trained")
-      
+
     predictions = []
     for P in L:
       predictions.append(self.predict_element(P))
     return np.array(predictions)
-      
+
 
 class QDA():
   def __init__(self):
@@ -228,6 +228,8 @@ class QDA():
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
+    if np.any(counting < 2):
+      raise ValueError("All the classes must have at least 2 samples")
     log_pi = np.log(counting/len(Y))
 
     # Toma a média das features em cada classe
@@ -240,14 +242,20 @@ class QDA():
 
     # Cria as matrizes de covariância para cada classe
     sigmas = []
-
     for i, k in enumerate(values):
       Xk = X[Y == k]
       X_centered = Xk - means[i]
       sigma_k = X_centered.T @ X_centered / (len(Xk)-1)
       sigmas.append(sigma_k)
-    sigmas_inv = [np.linalg.inv(sigma) for sigma in sigmas]
-    
+
+    sigmas_inv = []
+    for sigma in sigmas:
+      try:
+        sigma_inv = np.linalg.inv(sigma)
+        sigmas_inv.append(sigma_inv)
+      except:
+        raise ValueError("Some class didn't generate an invertible covariance matrix")
+
 
     self.log_pi = log_pi
     self.means = means
@@ -262,19 +270,19 @@ class QDA():
 
   def predict_element(self, P):
     predict_element_check(P, self.means.shape[1])
-    
+
     # Busca a classe que maximiza aux para esses dados novos
     vector_aux = np.zeros(len(self.values))
-    
+
     for i in range(len(self.values)):
       vector_aux[i] = self.aux(P, self.sigmas[i], self.sigmas_inv[i], self.means[i], self.log_pi[i])
-      
+
     return self.values[np.argmax(vector_aux)]
 
   def predict(self, L):
     if self.means is None:
       raise TypeError("The model must be trained")
-      
+
     predictions = []
     for P in L:
       predictions.append(self.predict_element(P))
@@ -282,53 +290,102 @@ class QDA():
 
 
 # -----TESTES-----
-print(sigmoid(0))
-print(sigmoid(1))
-print(sigmoid(-1))
+print("Sigmoide(0) = ", sigmoid(0))
+print("Sigmoide(1) = ", sigmoid(1))
+print("Sigmoide(-1) = ", sigmoid(-1))
 
 n = np.array([1, 1, 1])
-print(multi_sigmoid(n))
-
+print("Softmax(1, 1, 1) = ", softmax(n))
 n = np.array([2, 1, 1])
-print(multi_sigmoid(n))
-
+print("Softmax(2, 1, 1) = ", softmax(n))
 n = np.array([1, 2, 2])
-print(multi_sigmoid(n))
-
+print("Softmax(1, 2, 2) = ", softmax(n))
 n = np.array([1, 3, 1])
-print(multi_sigmoid(n))
-
+print("Softmax(1, 3, 1) = ", softmax(n))
 n = np.array([1.5, 1, 0, -1, -1.5])
-print(multi_sigmoid(n))
-
+print("Softmax(1.5, 1, 0, -1, -1.5) = ", softmax(n))
 n = np.array([5])
-print(multi_sigmoid(n))
-
+print("Softmax(5) = ", softmax(n))
 n = np.array([1, 1.01])
-print(multi_sigmoid(n))
+print("Softmax(1, 1.01) = ", softmax(n))
+print()
 
-X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7]])
-Y = np.array(["Red", "Red", "Blue", "Blue", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green"])
+modelRL = Logistic_Regression()
+modelRLNI = Logistic_Regression(intercept = False)
+modelRLHL = Logistic_Regression(learning_rate = 1)
+modelRLFI = Logistic_Regression(iterations = 2)
+modelKNN5 = KNN()
+modelKNN1 = KNN(K=1)
+modelKNN10 = KNN(K=10)
+modelLDA = LDA()
+modelQDA = QDA()
+
+# Para os testes abaixo, o LDA e o QDA foram testados separadamente nos itens em que se aplicam
+def test(X, Y, X_teste):
+  modelRL.train(X, Y)
+  modelRLNI.train(X, Y)
+  modelRLHL.train(X, Y)
+  modelRLFI.train(X, Y)
+  modelKNN5.train(X, Y)
+  modelKNN1.train(X, Y)
+  modelKNN10.train(X, Y)
+
+  print("Regressão Logística: ", modelRL.predict(X_teste))
+  print("Regressão Logística sem intercepto: ", modelRLNI.predict(X_teste))
+  print("Regressão Logística com alto learning rate: ", modelRLHL.predict(X_teste))
+  print("Regressão Logística com poucas iterações: ", modelRLFI.predict(X_teste))
+  print("KNN com K=5: ", modelKNN5.predict(X_teste))
+  print("KNN com K=1: ", modelKNN1.predict(X_teste))
+  print("KNN com K=10: ", modelKNN10.predict(X_teste))
+
+# Vários pontos
+X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
+Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
 X_teste = np.array([[0, 0], [3, 3], [-2, 0], [-4, 6], [0, -4]])
+test(X, Y, X_teste)
+modelLDA.train(X, Y)
+modelQDA.train(X, Y)
+print("LDA: ", modelLDA.predict(X_teste))
+print("QDA: ", modelQDA.predict(X_teste))
+print()
 
-model = Logistic_Regression()
-model.train(X, Y)
-print(model.predict(X_teste))
+# Pontos em uma linha reta
+X = np.array([[1, 2], [0.6, 2], [1, 2], [0.7, 2], [-10, 2], [0, 2]])
+Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
+X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
+test(X, Y, X_teste)
+print()
 
-model1 = KNN()
-model2 = KNN(K=1)
-model3 = KNN(K=10)
-model1.train(X, Y)
-model2.train(X, Y)
-model3.train(X, Y)
-print(model1.predict(X_teste))
-print(model2.predict(X_teste))
-print(model3.predict(X_teste))
+# Pontos em uma linha quase reta
+X = np.array([[1, 2], [0.6, 2.1], [1, 2.1], [0.7, 2], [-10, 1.9], [0, 2.2]])
+Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
+X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
+test(X, Y, X_teste)
+modelLDA.train(X, Y)
+print("LDA: ", modelLDA.predict(X_teste))
+print()
 
-model = LDA()
-model.train(X, Y)
-print(model.predict(X_teste))
+# Um único ponto
+X = np.array([[8, -7]])
+Y = np.array(["Only"])
+X_teste = np.array([[0, 0], [1, 1], [2, 2], [3, 3]])
+test(X, Y, X_teste)
+print()
 
-mode1 = QDA()
-model.train(X, Y)
-print(model.predict(X_teste)) # Erro de covariância
+# Prevendo mudança em uma reta
+X = np.array([[-1.51, -1.49], [-1, -1], [1, 1]])
+Y = np.array(["A", "A", "B"])
+X_teste = np.array([[0.9, 0.9], [0.5, 0.5], [0.25, 0.25], [0.1, 0.1], [0, 0], [-0.1, -0.1], [-0.25, -0.25], [-0.5, -0.5], [-0.9, -0.9]])
+test(X, Y, X_teste)
+modelLDA.train(X, Y)
+print("LDA: ", modelLDA.predict(X_teste))
+print()
+
+# Pontos iguais em classes diferentes
+X = np.array([[0, 0], [0, 0], [1, 2], [1, 2], [-1, -1], [-1, -1]])
+Y = np.array(["Equal", "Identical", "Equal", "Identical", "Equal", "Identical"])
+X_teste = np.array([[5, -3], [0, 0]])
+test(X, Y, X_teste)
+modelLDA.train(X, Y)
+print("LDA: ", modelLDA.predict(X_teste))
+print()
