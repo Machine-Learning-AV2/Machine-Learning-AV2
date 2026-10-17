@@ -3,20 +3,20 @@
 
 import numpy as np
 
-# Aplica o somatório em uma função perda
-def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 1) -> float:
+# Aplica o somatório em uma função loss
+def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([]), subs:float = 1) -> float:
 
-    """Retorna o valor da soma de uma função perda para um vetor de valores previstos e observados
+    """Retorna o valor da soma de uma função loss para um vetor de valores previstos e observados
     
     Parâmetros
     -----------
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados;
-    p : Parâmetro que define a função perda;
+    p : Parâmetro que define a função loss;
     l : Matriz de pesos para erros de classificação via função indicadora;
     subs : Valor de peso padrão para casos não listados na matriz l.
 
-    Funções perda implementadas
+    Funções loss implementadas
     ----------------------------
     p (numérico) = |y - x|^p;  
     p ('ind') = k se (y != x).
@@ -32,22 +32,23 @@ def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 
     ---------
     >>> x = np.array([1, 2, 4])
     >>> y = np.array([1, 3, 5])
-    >>> perda(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2) = 2
-    >>> l = [[2, 3, 2]] # O peso em classificar x = 2 enquanto y = 3 é 2
-    >>> perda(x, y, 'ind', l, 3) # Classificar errado nos demais casos tem peso 3"""
+    >>> loss(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2) = 2
+    >>> l = np.array([2, 3, 2]) # O peso em classificar x = 2 enquanto y = 3 é 2
+    >>> loss(x, y, 'ind', l, 3) # Classificar errado nos demais casos tem peso 3"""
     
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
     if x.size != y.size:
         raise ValueError('Os dois vetores devem ter o mesmo tamanho')
-    if l != []:
+    if l.size > 0:
         for i in l:
-            if len(i) != 3:
+            size = l.shape
+            if size[1] != 3:
                 raise TypeError('As restrições devem conter o valor previsto, o observado e o peso da penalidade (apenas)')
     if not isinstance(subs, (int, float)):
         raise TypeError('O valor de substituição padrão deve ser numérico')
     
-    # Perdas para problemas de regressão baseadas nas normas L_p
+    # losss para problemas de regressão baseadas nas normas L_p
     if isinstance(p, (int, float)):
         if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
             raise TypeError('Os vetores devem conter dados numéricos para a regressão')
@@ -58,7 +59,7 @@ def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 
         else:
             return float(np.abs(y-x).max())
 
-    # Perda com a função indicadora
+    # loss com a função indicadora
     elif p == 'ind':
         soma = 0
         l_x = [i[0] for i in l]
@@ -68,7 +69,7 @@ def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 
                     indxs = [indx for indx, x_ in enumerate(l_x) if x_ == x[i]]
                     for j in indxs:
                         if l[j][1] == y[i]:
-                            soma += l[j][2]
+                            soma += float(l[j][2])
                             break
                 else:
                     soma += subs
@@ -76,8 +77,8 @@ def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 
     else:
         raise TypeError('Método não implementado')
 
-# (Sum of Absolute Errors - Soma dos Erros Absolutos - Perda L_1)
-def sae(x:np.ndarray, y:np.ndarray) -> float:
+# (Sum of Absolute Errors - Soma dos Erros Absolutos - loss L_1)
+def SAE(x:np.ndarray, y:np.ndarray) -> float:
 
     """Retorna a soma de |y_i-x_i| para todo y_i em y e x_i em x
 
@@ -86,10 +87,10 @@ def sae(x:np.ndarray, y:np.ndarray) -> float:
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    return perda(x, y, 1)
+    return loss(x, y, 1)
 
-# (Residual Sum of Squares - Soma do Quadrado dos Resíduos - Perda L_2)
-def rss(x:np.ndarray, y:np.ndarray) -> float:
+# (Residual Sum of Squares - Soma do Quadrado dos Resíduos - loss L_2)
+def RSS(x:np.ndarray, y:np.ndarray) -> float:
 
     """Retorna a soma de |y_i-x_i|^2 para todo y_i em y e x_i em x
     
@@ -98,10 +99,10 @@ def rss(x:np.ndarray, y:np.ndarray) -> float:
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    return perda(x, y, 2)
+    return loss(x, y, 2)
 
-# (Maximun Error - Erro Máximo - Perda L_inf)
-def me(x:np.ndarray, y:np.ndarray) -> float:
+# (Maximun Error - Erro Máximo - loss L_inf)
+def ME(x:np.ndarray, y:np.ndarray) -> float:
 
     """Retorna o max{|y_i-x_i|} para todo y_i em y e x_i em x
 
@@ -110,22 +111,22 @@ def me(x:np.ndarray, y:np.ndarray) -> float:
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    return perda(x, y, float('inf'))
+    return loss(x, y, float('inf'))
 
-# Risco Empírico - Média da função perda
-def risco_empirico(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 1) -> float:
+# Risco Empírico - Média da função loss
+def empirical_risk(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([]), subs:float = 1) -> float:
 
-    """Retorna o valor do risco empírico de uma previsão segundo a função perda desejada
+    """Retorna o valor do risco empírico de uma previsão segundo a função loss desejada
     
     Parâmetros
     -----------
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados;
-    p : Parâmetro que define a função perda;
+    p : Parâmetro que define a função loss;
     l : Matriz de pesos para erros de classificação via função indicadora;
     subs : Valor de peso padrão para casos não listados na matriz l.
 
-    Funções perda implementadas
+    Funções loss implementadas
     ----------------------------
     p (numérico) = |y - x|^p;  
     p ('ind') = k se (y != x).
@@ -141,23 +142,23 @@ def risco_empirico(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs
     ---------
     >>> x = np.array([1, 2, 4])
     >>> y = np.array([1, 3, 5])
-    >>> risco_empirico(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2)/3 ≃ 0.666...
-    >>> perda(x, y, 'ind', subs = 3) # Retorna (0 + 3 + 3)/3 = 2"""
+    >>> empirical_risk(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2)/3 ≃ 0.666...
+    >>> loss(x, y, 'ind', subs = 3) # Retorna (0 + 3 + 3)/3 = 2"""
 
     if isinstance(p, (int, float)):
         if p < float('inf'):
             n = x.size
-            return perda(x, y, p, l, subs) / n
+            return loss(x, y, p, l, subs) / n
         else:
             raise ValueError('O parâmetro deve ser um valor finito')
     elif p == 'ind':
         n = x.size
-        return perda(x, y, p, l, subs) / n
+        return loss(x, y, p, l, subs) / n
     else:
         raise TypeError('Método não implementado')
 
 # (Mean Absolute Error - Erro Absoluto Médio)
-def mae(x:np.ndarray, y:np.ndarray) -> float:
+def MAE(x:np.ndarray, y:np.ndarray) -> float:
 
     """Retorna a soma de |y_i-x_i|/n para todo y_i em y e x_i em x
 
@@ -166,10 +167,10 @@ def mae(x:np.ndarray, y:np.ndarray) -> float:
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    return risco_empirico(x, y, 1)
+    return empirical_risk(x, y, 1)
 
 # (Mean Squared Error - Erro Quadrático Médio)
-def mse(x:np.ndarray, y:np.ndarray) -> float:
+def MSE(x:np.ndarray, y:np.ndarray) -> float:
 
     """Retorna a soma de (|y_i-x_i|^2)/n para todo y_i em y e x_i em x
     
@@ -178,10 +179,10 @@ def mse(x:np.ndarray, y:np.ndarray) -> float:
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    return risco_empirico(x, y, 2)
+    return empirical_risk(x, y, 2)
 
 # (Root Mean Squared Error - Raiz do Erro Quadrático Médio)
-def rmse(x:np.ndarray, y:np.ndarray) -> float:
+def RMSE(x:np.ndarray, y:np.ndarray) -> float:
 
     """Retorna a raiz da soma de |y_i-x_i|^2 para todo y_i em y e x_i em x
     
@@ -190,10 +191,10 @@ def rmse(x:np.ndarray, y:np.ndarray) -> float:
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    return mse(x, y)**(1/2)
+    return MSE(x, y)**(1/2)
 
 # (Total Sum of Squares) - Soma dos Quadrados Total
-def tss(x:np.ndarray) -> float:
+def TSS(x:np.ndarray) -> float:
 
     """Retorna a soma de |x_i - (média de x)|^2 para todo x_i em x
     
@@ -215,12 +216,12 @@ def R2(x:np.ndarray, y:np.ndarray) -> float:
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    rss_ = rss(x, y)
-    tss_ = tss(y)
-    return 1 - (rss_/tss_)
+    RSS_ = RSS(x, y)
+    tss_ = TSS(y)
+    return 1 - (RSS_/tss_)
 
 # Norma Lp de um vetor
-def norma_lp(x:np.ndarray, p:float) -> float:
+def norm_lp(x:np.ndarray, p:float) -> float:
 
     """Retorna a norma L_p de um vetor
     
@@ -256,7 +257,7 @@ def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
 
     if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
         raise TypeError('Os vetores devem conter dados numéricos para a norma')
-    return norma_lp(y-x, p)
+    return norm_lp(y-x, p)
 
 
 # Testes para as funções criadas até o momento
@@ -271,98 +272,98 @@ if __name__ == '__main__':
 
     indx = 1
     # Deve retornar 22
-    if abs(perda(a, b, 1) - 22) < tol:
+    if abs(loss(a, b, 1) - 22) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 142
-    if abs(perda(a, b, 2) - 142) < tol:
+    if abs(loss(a, b, 2) - 142) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 76_102
-    if abs(perda(a, b, 5) - 76_102) < tol:
+    if abs(loss(a, b, 5) - 76_102) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 9
-    if abs(perda(a, b, np.inf) - 9) < tol:
+    if abs(loss(a, b, np.inf) - 9) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 22
-    if abs(sae(a, b) - 22) < tol:
+    if abs(SAE(a, b) - 22) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 142
-    if abs(rss(a, b) - 142) < tol:
+    if abs(RSS(a, b) - 142) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 9
-    if abs(me(a, b) - 9) < tol:
+    if abs(ME(a, b) - 9) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 22/6 ≃ 3.666666666
-    if abs(risco_empirico(a, b, 1) - 3.666666666) < tol:
+    if abs(empirical_risk(a, b, 1) - 3.666666666) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 142/6 ≃ 23.666666666
-    if abs(risco_empirico(a, b, 2) - 23.666666666) < tol:
+    if abs(empirical_risk(a, b, 2) - 23.666666666) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 76_102/6 ≃ 12_683.666666666
-    if abs(risco_empirico(a, b, 5) - 12_683.666666666) < tol:
+    if abs(empirical_risk(a, b, 5) - 12_683.666666666) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 22/6 ≃ 3.666666666
-    if abs(mae(a, b) - 3.666666666) < tol:
+    if abs(MAE(a, b) - 3.666666666) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 142/6 ≃ 23.666666666
-    if abs(mse(a, b) - 23.666666666) < tol:
+    if abs(MSE(a, b) - 23.666666666) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar (142/6)**(1/2) ≃ 4.864839839
-    if abs(rmse(a, b) - 4.864839839) < tol:
+    if abs(RMSE(a, b) - 4.864839839) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 212.833333333
-    if abs(tss(a) - 212.833333333) < tol:
+    if abs(TSS(a) - 212.833333333) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
@@ -376,14 +377,14 @@ if __name__ == '__main__':
 
     indx += 1
     # Deve retornar 49
-    if abs(norma_lp(a, 1) - 49) < tol:
+    if abs(norm_lp(a, 1) - 49) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar (229)**(1/2) ≃ 15.132745950
-    if abs(norma_lp(b, 2) - 15.132745950) < tol:
+    if abs(norm_lp(b, 2) - 15.132745950) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
@@ -407,30 +408,30 @@ if __name__ == '__main__':
 
     indx += 1
     # Deve retornar 2
-    if abs(perda(c, d, 'ind') - 2) < tol:
+    if abs(loss(c, d, 'ind') - 2) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 2/5 = 0.4
-    if abs(risco_empirico(c, d, 'ind') - 0.4) < tol:
+    if abs(empirical_risk(c, d, 'ind') - 0.4) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
-    l_1 = [['sim', 'não', 2], ['não', 'sim', 1]]
+    l_1 = np.array([['sim', 'não', 2], ['não', 'sim', 1]])
 
     indx += 1
     # Deve retornar 3
-    if abs(perda(c, d, 'ind', l_1) - 3) < tol:
+    if abs(loss(c, d, 'ind', l_1) - 3) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
 
     indx += 1
     # Deve retornar 3/5 = 0.6
-    if abs(risco_empirico(c, d, 'ind', l_1) - 0.6) < tol:
+    if abs(empirical_risk(c, d, 'ind', l_1) - 0.6) < tol:
         print(f'{indx} Validada')
     else:
         print(f'{indx} Não Validada')
