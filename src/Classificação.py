@@ -1,4 +1,5 @@
 import numpy as np
+from metricas import dist
 
 # Verifica se os dados de input para treino possuem algum erro
 def train_check(X, Y):
@@ -46,7 +47,7 @@ def softmax(scores: np.array) -> np.array:
 
 class KNN():
 
-  def __init__(self, K = 5):
+  def __init__(self, K = 5, p=2, normalize=False):
     if not isinstance(K, (int, np.integer)):
       raise TypeError("K must be integer number")
     if K <= 0:
@@ -55,19 +56,30 @@ class KNN():
     self.K = K
     self.X = None
     self.Y = None
+    self.p = p
+    self.normalize = normalize
+    self.standard = None
+    self.mean = None
 
   def distance(self, P1, P2):
-    return np.linalg.norm(P1-P2)
-    # Aqui, há de se redimensionar os dados e decidir a métrica usada.
+    return dist(P1, P2, self.p)
 
   def train(self, X, Y):
     train_check(X, Y)
-    self.X = X
+    if self.normalize:
+      self.mean = X.mean(axis=0)
+      self.standard = X.std(axis=0)
+      self.X = (X - self.mean) / self.standard
+    else:
+      self.X = X
     self.Y = Y
 
   def predict_element(self, P):
     if self.X is None:
       raise TypeError("The model must be trained")
+
+    if self.normalize:
+      P = (P-self.mean)/self.standard
 
     neighborhood = []
 
@@ -389,3 +401,14 @@ test(X, Y, X_teste)
 modelLDA.train(X, Y)
 print("LDA: ", modelLDA.predict(X_teste))
 print()
+
+# Teste métrica KNN
+modelKNN2 = KNN(K=2)
+modelKNN2sigma = KNN(K=2, normalize=True)
+X = np.array([[10, 10], [11, 11], [8, 9], [0, 0], [1, -1], [-1000, 1]])
+Y = np.array(["Direito", "Direito", "Direito", "Esquerdo", "Esquerdo", "Esquerdo"])
+X_teste = np.array([[11, 1]])
+modelKNN2.train(X, Y)
+modelKNN2sigma.train(X, Y)
+print(modelKNN2.predict(X_teste))
+print(modelKNN2sigma.predict(X_teste))
