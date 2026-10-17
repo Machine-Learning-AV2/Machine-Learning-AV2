@@ -1,8 +1,21 @@
 import numpy as np
 from MSE import MSE
+#Falta padronizar as funções com as outras partes da biblioteca
 
 class Bootstrap:
-    def __init__(self, modelo, dados_x, dados_y, stat = MSE(),n):     #faz o bootstrap, por padrão, com o mse
+    def __init__(self,
+            modelo,
+            dados_x : np.ndarray,
+            dados_y : np.ndarray,
+            n: int = 1000,
+            stat = MSE
+        ):
+        """
+        O argumento "modelo" deve ser uma classe da bibliteca
+        ou que aceita dados no mesmo padrão 
+        stat = MSE: é a estatística que se quer calcular
+        """
+    
         self.modelo = modelo
         self.dados_x = dados_x
         self.dados_y = dados_y
@@ -10,38 +23,70 @@ class Bootstrap:
         self.n = n
         self.arr = None
 
-    def mostras(self):       #pega dados_x e dados_y e então faz a nova amostra
+        if hasattr(self.modelo(), "fit") == False:
+            raise AttributeError("O modelo não contém a função 'fit' necessária")
+        elif hasattr(self.modelo(),"predict") == False:
+            raise AttributeError("O modelo não contém a função 'predict' necessária")
+
+    def _mostras(self):
+        """
+        Função que seleciona as amostras de dados_x e dados_y para cada iteração do boostrap
+        """
+
         le = len(self.dados_x)
-        samples = np.random.choice(le,
-                                    size=self.n,
+        sample = np.random.choice(le,
+                                    size=le,
                                     replace=True
                                     )
-        samples_x = self.dados_x[samples]
-        samples_y = self.dados_y[samples]
-        return samples_x, samples_y         #de cada um, eu quero alguma estatistica em especifico
+        
+        sample_x = self.dados_x[sample]
+        sample_y = self.dados_y[sample]
+
+        return sample_x, sample_y
 
     def construir_array(self):
+        """
+        Performa o Bootstrap, retornando um array
+        com a estatística desejada de cada iteração
+        """
+
         arr = np.empty(self.n)
+
         for i in range(self.n):
-            mostras_x,mostras_y = self.mostras(n=n)
+            _mostras_x,_mostras_y = self.mostras()
             modelo1 = self.modelo()
-            modelo1.train(mostras_x[:,1],mostras_y[:1])
-            y_chap = modelo1.predict(mostras_x)
-            arr[i] = self.stat(mostras_y[:,i],y_chap)
+            modelo1.fit(_mostras_x,_mostras_y)
+            y_chap = modelo1.predict(_mostras_x)
+            arr[i] = self.stat(_mostras_y,y_chap)
+
         self.arr = arr
         return arr
 
     def media(self):
-        if self.arr == None:
-            return self.construir_array()
+        """
+        Calcula a média do array obtido. 
+        Se não existe, calcula o array primeiro
+        """
+
+        if self.arr is None:
+            return np.mean(self.construir_array())
         return np.mean(self.arr)
 
     def desv_padrao(self):
-        if self.arr == None:
-            return self.construir_array()
+        """
+        Calcula o desvio padrão do array obtido. 
+        Se não existe, calcula o array primeiro
+        """
+        if self.arr is None:
+            return np.std(self.construir_array())
         return np.std(self.arr)
 
     def int_de_confianca(self, alpha = 0.05):
-        if self.arr == None:
-            self.construir_array()
+        """
+        Calcula o intervalo de confiança do array obtido. 
+        Se não existe, calcula o array primeiro
+        """
+
+        if self.arr is None:
+            return np.percentile(self.construir_array(), [100*alpha/2, 100*(1-alpha/2)])
         return np.percentile(self.arr, [100*alpha/2, 100*(1-alpha/2)])
