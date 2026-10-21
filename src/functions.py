@@ -28,7 +28,7 @@ if __name__ == "__main__":
     x1, x2 = 0, np.pi
 
     print(f'Teste das funções para x1 = {x1}')
-    print(f'{sigmoid(x1) = }')
+    print(f'{sigmoid(x1) = }')  
     print(f'{sigmoid_diff(x1) = }')
     print(f'{tanh(x1) = }')
     print(f'{tanh_diff(x1) = }')
