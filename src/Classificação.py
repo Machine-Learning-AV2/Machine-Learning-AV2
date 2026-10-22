@@ -2,7 +2,7 @@ import numpy as np
 from metricas import dist
 
 # Verifica se os dados de input para treino possuem algum erro
-def train_check(X, Y):
+def train_check(X: np.ndarray, Y: np.ndarray) -> None:
   if not isinstance(X, np.ndarray):
       raise TypeError("X must be numpy array")
   if not isinstance(Y, np.ndarray):
@@ -20,7 +20,7 @@ def train_check(X, Y):
   if not np.issubdtype(X.dtype, np.number):
       raise TypeError("X must contain numeric values")
 
-def predict_element_check(P, n_features):
+def predict_element_check(P: np.ndarray, n_features: int) -> None:
   if P.ndim != 1:
       raise ValueError("Input must be 1D")
   if P.shape[-1] != n_features:
@@ -33,21 +33,24 @@ def sigmoid(z: float) -> float:
   return 1/(1+np.exp(-z))
 
 # Versão do sigmoide para mais variáveis (scores). A soma total de probabilities deve ser 1.
-def softmax(scores: np.array) -> np.array:
-  n = len(scores)
-  probabilities = np.zeros(n)
-  exp = 0
-
-  for i in range(n):
-    exp += np.exp(scores[i])
-  for i in range(n):
-    probabilities[i] = np.exp(scores[i]) / (exp)
-
-  return probabilities
-
+def softmax(scores: np.ndarray) -> np.ndarray:
+  exp_scores = np.exp(scores)
+  return exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
+  
 class KNN():
+  """
+  O modelo de K nearest neighbors, para um K escolhido
+  """
 
-  def __init__(self, K = 5, p=2, normalize=False):
+  def __init__(self, K: int = 5, p=2, normalize=False):
+    """
+    Inicia o modelo KNN
+
+    K: Inteiro que representa o tamanho da vizinhança observada em cada dado. Dessa vizinhança, a maioria elegerá a classe prevista.
+    p: A norma Lp (Σ Pi^p)^(1/p). Por padrão, a distância euclidiana dos pontos (L2).
+    normalize: Caso queira manter um desvio padrão consistente para todo preditor, torne isso True. Os dados serão normalizados para média 0 e variância 1.
+    """
+    
     if not isinstance(K, (int, np.integer)):
       raise TypeError("K must be integer number")
     if K <= 0:
@@ -61,10 +64,17 @@ class KNN():
     self.standard = None
     self.mean = None
 
-  def distance(self, P1, P2):
+  def distance(self, P1: np.ndarray, P2: np.ndarray) -> float:
     return dist(P1, P2, self.p)
 
-  def train(self, X, Y):
+  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+    """
+    Treina o modelo KNN
+
+    X: array com todos os preditores dos dados de treino.
+    Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
+    """
+    
     train_check(X, Y)
     if self.normalize:
       self.mean = X.mean(axis=0)
@@ -74,9 +84,11 @@ class KNN():
       self.X = X
     self.Y = Y
 
-  def predict_element(self, P):
+  def predict_element(self, P: np.ndarray):
     if self.X is None:
       raise TypeError("The model must be trained")
+
+    predict_element_check(P, self.X.shape[1])
 
     if self.normalize:
       P = (P-self.mean)/self.standard
@@ -96,7 +108,12 @@ class KNN():
     values, counting = np.unique(classes, return_counts=True)
     return values[np.argmax(counting)]
 
-  def predict(self, L):
+  def predict(self, L: np.ndarray) -> np.ndarray:
+    """
+    Retorna a previsão do KNN para os dados novos. O modelo deve ter sido treinado antes das previsões.
+
+    L: array de novos dados com seus preditores
+    """
     predictions = []
     for P in L:
       predictions.append(self.predict_element(P))
@@ -104,8 +121,19 @@ class KNN():
 
 
 class Logistic_Regression():
+  """
+  O modelo de Regressão Logística, com intercepto opcional
+  """
 
-  def __init__(self, learning_rate = 0.01, iterations = 1000, intercept=True):
+  def __init__(self, learning_rate: float = 0.01, iterations: int = 1000, intercept=True):
+    """
+    Inicia o modelo de Regressão Logística
+
+    learning_rate: Valor do passo na descida de gradiente. Se muito pequeno, pode demorar a convergir ou não chegar ao ótimo. Se muito alto, pode divergir.
+    iterations: Número de passos que o algoritmo da descida de gradiente executa.
+    intercept: Pode ser interpretado como um viés natural para cada classe ser mais ou menos provável. Torne False se quiser desativá-lo.
+    """
+    
     self.beta = None
     self.beta0 = None
     self.values = None
@@ -113,7 +141,14 @@ class Logistic_Regression():
     self.iter = iterations
     self.intercept = intercept
 
-  def train(self, X, Y):
+  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+    """
+    Treina o modelo de Regressão Logística
+
+    X: array com todos os preditores dos dados de treino.
+    Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
+    """
+    
     train_check(X, Y)
 
     # Usa a decida de gradiente para estimar beta
@@ -143,18 +178,24 @@ class Logistic_Regression():
       if self.intercept:
         self.beta0 -= self.alpha * grad_beta0
 
-  def predict_probabilities(self, X):
+  def predict_probabilities(self, X: np.ndarray) -> np.ndarray:
     Z = X @ self.beta
     if self.intercept:
       Z += self.beta0
     return softmax(Z)
 
-  def predict_element(self, P):
+  def predict_element(self, P: np.ndarray):
     predict_element_check(P, self.beta.shape[0])
     ind = np.argmax(self.predict_probabilities(P))
     return self.values[ind]
 
-  def predict(self, L):
+  def predict(self, L: np.ndarray) -> np.array:
+    """
+    Retorna a previsão da Regressão Logística para os dados novos. O modelo deve ter sido treinado antes das previsões.
+
+    L: array de novos dados com seus preditores
+    """
+    
     if self.beta is None:
       raise TypeError("The model must be trained")
     predictions = []
@@ -164,13 +205,27 @@ class Logistic_Regression():
 
 
 class LDA():
+  """
+  O modelo de Análise de Discriminante Linear
+  """
+  
   def __init__(self):
+    """
+    Inicia o modelo de QDA. Não há parâmetros de input para essa classe.
+    """
     self.log_pi = None
     self.means = None
     self.sigma_inv = None
     self.values = None
 
-  def train(self, X, Y):
+  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+    """
+    Treina o modelo LDA
+
+    X: array com todos os preditores dos dados de treino.
+    Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
+    """
+    
     train_check(X, Y)
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
@@ -206,7 +261,7 @@ class LDA():
     # Essa fórmula é a que deve ser maximizada pelo LDA
     return (X.T - 1/2 * mean.T) @ sigma_inv @ mean + log_freq
 
-  def predict_element(self, P):
+  def predict_element(self, P: np.ndarray):
     predict_element_check(P, self.means.shape[1])
 
     # Busca a classe que maximiza aux para esses dados novos
@@ -217,7 +272,13 @@ class LDA():
 
     return self.values[np.argmax(vector_aux)]
 
-  def predict(self, L):
+  def predict(self, L: np.ndarray) -> np.array:
+    """
+    Retorna a previsão do LDA para os dados novos. O modelo deve ter sido treinado antes das previsões.
+
+    L: array de novos dados com seus preditores
+    """
+    
     if self.means is None:
       raise TypeError("The model must be trained")
 
@@ -228,14 +289,27 @@ class LDA():
 
 
 class QDA():
+  """
+  O modelo de Análise de Discriminante Quadrática
+  """
   def __init__(self):
+    """
+    Inicia o modelo de QDA. Não há parâmetros de input para essa classe.
+    """
     self.log_pi = None
     self.means = None
     self.sigmas = None
     self.sigmas_inv = None
     self.values = None
 
-  def train(self, X, Y):
+  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+    """
+    Treina o modelo QDA
+
+    X: array com todos os preditores dos dados de treino.
+    Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
+    """
+    
     train_check(X, Y)
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
@@ -280,7 +354,7 @@ class QDA():
     # Essa fórmula é a que deve ser maximizada pelo QDA
     return -1/2 * (X - mean).T @ sigma_inv @ (X - mean) + log_freq - 1/2 * np.log(np.linalg.det(sigma))
 
-  def predict_element(self, P):
+  def predict_element(self, P: np.ndarray):
     predict_element_check(P, self.means.shape[1])
 
     # Busca a classe que maximiza aux para esses dados novos
@@ -290,8 +364,13 @@ class QDA():
       vector_aux[i] = self.aux(P, self.sigmas[i], self.sigmas_inv[i], self.means[i], self.log_pi[i])
 
     return self.values[np.argmax(vector_aux)]
+    
+  def predict(self, L: np.ndarray) -> np.array:
+    """
+    Retorna a previsão do QDA para os dados novos. O modelo deve ter sido treinado antes das previsões.
 
-  def predict(self, L):
+    L: array de novos dados com seus preditores
+    """
     if self.means is None:
       raise TypeError("The model must be trained")
 
