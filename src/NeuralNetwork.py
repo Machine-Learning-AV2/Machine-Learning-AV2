@@ -28,19 +28,19 @@ class NeuralNetwork:
         if isinstance(activate_function, list):
             if len(activate_function) != len(layers)-2:
                 raise KeyError("ERROR: Quantidade de funções diferente dos layers ocultos")
-            self._activate_function: list[functions_name] = activate_function.copy()
+            self.activate_functions: list[functions_name] = activate_function.copy()
         else:
-            self._activate_function: list[functions_name] = [activate_function] * (len(layers) - 2)
+            self.activate_functions: list[functions_name] = [activate_function] * (len(layers) - 2)
 
-        self._activate_function += [output_activation]
+        self.activate_functions += [output_activation]
         self._function_dictionary = function_dictionary.copy()
 
-        self.check_activate(self._activate_function, self._function_dictionary)
+        self.check_activate(self.activate_functions, self._function_dictionary)
 
     @staticmethod
-    def check_activate(activate_functions: list[str], activate_function_dictionary: dict[str, tuple[Callable, Callable]]) -> None:
+    def check_activate(activate_functions: list[str], function_dictionary: dict[str, tuple[Callable, Callable]]) -> None:
         for function_name in activate_functions:
-            if function_name not in activate_function_dictionary:
+            if function_name not in function_dictionary:
                 raise ValueError(f"ERROR: Função de ativação inválida: {function_name}")
 
     @staticmethod
@@ -121,7 +121,7 @@ class NeuralNetwork:
         for level in range(1, len(self.layers)):
             bayes: np.ndarray = self.bayes[level-1]
             weight: np.ndarray = self.weight[level-1]
-            activate_func = self._function_dictionary[self._activate_function[level-1]][0]
+            activate_func = self._function_dictionary[self.activate_functions[level-1]][0]
 
             y = activate_func(bayes + weight @ y)
 
@@ -129,5 +129,6 @@ class NeuralNetwork:
 
 
 if __name__ == "__main__":
-    rn = NeuralNetwork([2, 4, 5, 2], activate_function="ReLU", output_activation="sigmoid", bayes_interval = (-3, 3), weight_interval = (-10, 10))
+    rn = NeuralNetwork([2, 4, 5, 2], activate_function="sigmoid", output_activation="identity", bayes_interval = (-3, 3), weight_interval = (-10, 10))
     print(f"\ny = {rn.prevision(np.array([[0.5], [0.2]]))}")
+    
