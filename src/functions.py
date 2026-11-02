@@ -84,4 +84,3 @@ if __name__ == "__main__":
     print(f'{identity(x2) = }')
     print(f'{identity_diff(x2) = }')
     print()
-
