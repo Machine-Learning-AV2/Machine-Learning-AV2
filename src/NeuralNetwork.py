@@ -74,6 +74,12 @@ class NeuralNetwork:
             -----------
             x com as dimenções atualizadas
         """
+
+        if isinstance(x, float) or isinstance(x, int):
+            x = np.array([x])
+        elif isinstance(x, list) or isinstance(x, tuple):
+            x = np.array(x)
+
         if x.ndim > 2:
             raise ValueError("Entrada invalida, x deve ser um vetor ou matriz")
         elif x.ndim == 1:
@@ -136,6 +142,10 @@ class NeuralNetwork:
             epochs int : Quantidade de interações nos dados de treino (1000 por padrão).
         """
 
+        self._loss = {
+            'MSE': (MSE, lambda y, y_pred: 2*(y_pred - y)/ y.shape[1]) 
+        }
+
         loss_function: str = 'MSE' #COLOCAR PARA PARAMETROS
 
         X = self.check_input(X)
@@ -147,9 +157,12 @@ class NeuralNetwork:
         for epoch in range(epochs):
             self._rng.shuffle(index)
 
-            batchs_index: list[np.ndarray] = np.array_split(index, max(1, X.shape[1] // batch))
+            for i in range(0, X.shape[1], batch):
+                if X.shape[1] - i < 2*batch:
+                    B = index[i:]
+                else:
+                    B = index[i: i+batch]
 
-            for B in batchs_index:
                 self.backpropagation(X[:, B], y[:, B], loss_function = loss_function, learn_rate = learn_rate)
 
     def backpropagation(self, x: np.ndarray, y: np.ndarray, loss_function: str = 'MSE', learn_rate: float = 0.1) -> None:
@@ -163,27 +176,24 @@ class NeuralNetwork:
             loss_function str : Função perda utilizada para calcular o gradiente;
             learn_rate float : Taxa de aprendizado (0.1 por padrão);
         """
-        N = y.shape[1]
-        loss = {
-            'MSE': (MSE, lambda y, y_pred: 2*(y_pred - y)/N) 
-        }
+
 
         self.prevision(x, save_states=True)
         cost: list[np.ndarray] = [np.array([]) for _ in range(1, len(self.layers))]
 
         activate_function = self.activate_functions[-1]
-        cost[-1] = loss[loss_function][1](y, self._state_layers[-1]) * self._function_dictionary[activate_function][1](self._state_linear[-1])
+        cost[-1] = self._loss[loss_function][1](y, self._state_layers[-1]) * self._function_dictionary[activate_function][1](self._state_linear[-1])
 
         for level in range(len(self.layers)-3, -1, -1):
             activate_function = self.activate_functions[level]
             cost[level] =  self.weight[level+1].T @ cost[level+1] * self._function_dictionary[activate_function][1](self._state_linear[level])
 
         for level in range(len(self.layers)-1):
-            self.weight[level] -= learn_rate * (cost[level] @ self._state_layers[level].T) / N
-            self.bias[level] -= learn_rate * np.mean(cost[level], axis=1, keepdims=True)
+            self.weight[level] -= learn_rate * (cost[level] @ self._state_layers[level].T)
+            self.bias[level] -= learn_rate * np.sum(cost[level], axis=1, keepdims=True)
 
 
-    def prevision(self, x: float | np.ndarray, save_states: bool = False) -> np.ndarray:
+    def prevision(self, x: float | np.ndarray, save_states: bool = False, classify = False) -> np.ndarray:
         """
             Calcula o valor de saida da rede neural com pesos e vieses atuais
             
@@ -196,8 +206,6 @@ class NeuralNetwork:
             -----------
             Valor de saida da rede neural com entrada x
         """
-
-        x = np.array(x)
 
         x = self.check_input(x)
 
@@ -219,19 +227,56 @@ class NeuralNetwork:
 
             y = layer
 
+        if classify:
+            return np.argmax(y)
+
         return y
 
 
 if __name__ == "__main__":
-    rn = NeuralNetwork([2, 4, 5, 3], activate_function="sigmoid", output_activation="identity", bias_interval = (-3, 3), weight_interval = (-10, 10))
 
-    # X = np.arange(512).reshape((1, 512))
-    # y = np.arange(512).reshape((1, 512))
+    print('-'*100)
+    print('Teste 1')
+    print('-'*100)
+    rn1 = NeuralNetwork([2, 4, 5, 2], activate_function="sigmoid", output_activation="sigmoid", bias_interval = (-1, 1), weight_interval = (-1, 1))
 
-    X = np.array([[9, 3], [1, 5]])
-    y = np.array([[2, 1], [2, 1], [2, 1]])
+    rng = np.random.default_rng(1)
+    X = rng.uniform(-4, 4, (2, 1000))
+    y = np.zeros(X.shape)
 
-    print(f"\ny = {rn.prevision(np.array([[100], [1]]))}")
-    rn.train(X, y)
+    for i, x in enumerate(X.T):
+        if x[0]**2 + x[1]**2 <= 9:
+            y[:, i] = [1, 0]
+        else:
+            y[:, i] = [0, 1]
 
-    print(f"\ny = {rn.prevision(np.array([[100], [1]]))}")
+    rn1.train(X, y, batch=50)
+
+    x1 = np.array([[1], [0]])
+    x2 = np.array([[3], [3]])
+    x3 = np.array([[5], [5]])
+
+    print(f"\nx_1=({x1[0]}, {x1[1]}) y_1 = {rn1.prevision(x1)}")
+    print(f"\ny_2 = {rn1.prevision(x2)}")
+    print(f"\ny_3 = {rn1.prevision(x3)}")
+
+    print(f"\nx_1=({x1[0]}, {x1[1]}) y_1 = {rn1.prevision(x1, classify=True)}")
+    print(f"\ny_2 = {rn1.prevision(x2, classify=True)}")
+    print(f"\ny_3 = {rn1.prevision(x3, classify=True)}")
+
+    print('-'*100)
+    print('Teste 2')
+    print('-'*100)
+
+    rn2 = NeuralNetwork([1, 4, 5, 1], activate_function="ReLU", output_activation="identity", bias_interval = (-0.1, 0.1), weight_interval = (-0.1, 0.1))
+
+    f = lambda x: np.exp(x)
+
+    X = np.linspace(-2, 3, 10000).reshape(1, -1)
+    y = f(X)
+
+    rn2.train(X, y, batch=50, learn_rate=0.01)
+
+    for x1 in range(20):
+        print(f"\nx_1={x1}, y_1={rn2.prevision(x1)}")
+    
