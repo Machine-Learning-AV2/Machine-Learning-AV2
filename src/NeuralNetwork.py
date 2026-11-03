@@ -283,7 +283,7 @@ if __name__ == "__main__":
     X = np.linspace(-2, 3, 10000).reshape(1, -1)
     y = f(X)
 
-    rn2.train(X, y, batch=50, learn_rate=0.0005, epochs=10000, tol=1e-6)
+    rn2.train(X, y, batch=50, learn_rate=0.001, epochs=10000)
 
     for x1 in range(20):
         print(f"\nx_1={x1}, y_1={rn2.prevision(x1)}")
