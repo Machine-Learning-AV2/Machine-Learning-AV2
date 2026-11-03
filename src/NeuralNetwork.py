@@ -129,7 +129,7 @@ class NeuralNetwork:
         return array
 
     def train(self, X: np.ndarray, y: np.ndarray, learn_rate: float = 0.1, 
-              batch: int = 10, epochs: int = 1000) -> None:
+              batch: int = 10, epochs: int = 1000, tol = 1e-9) -> None:
         """
             Treina a rede neural a partir dos dados X, y
             
@@ -154,6 +154,7 @@ class NeuralNetwork:
 
         index: np.ndarray = np.arange(X.shape[1])
 
+        loss = self._loss[loss_function][0](y, self.prevision(X))
         for epoch in range(epochs):
             self._rng.shuffle(index)
 
@@ -164,6 +165,13 @@ class NeuralNetwork:
                     B = index[i: i+batch]
 
                 self.backpropagation(X[:, B], y[:, B], loss_function = loss_function, learn_rate = learn_rate)
+
+            loss_aux = self._loss[loss_function][0](y, self.prevision(X))
+
+            if abs(loss - loss_aux) < tol:
+                break
+            else:
+                loss = loss_aux
 
     def backpropagation(self, x: np.ndarray, y: np.ndarray, loss_function: str = 'MSE', learn_rate: float = 0.1) -> None:
         """
@@ -275,7 +283,7 @@ if __name__ == "__main__":
     X = np.linspace(-2, 3, 10000).reshape(1, -1)
     y = f(X)
 
-    rn2.train(X, y, batch=50, learn_rate=0.01)
+    rn2.train(X, y, batch=50, learn_rate=0.0005, epochs=10000, tol=1e-6)
 
     for x1 in range(20):
         print(f"\nx_1={x1}, y_1={rn2.prevision(x1)}")
