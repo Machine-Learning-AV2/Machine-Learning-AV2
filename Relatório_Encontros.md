@@ -37,14 +37,14 @@ Cada participante deve até dia 17:
 
 # Reunião dia 17/10/2026
 Participantes:
-Marce Alves (Redes Neurais) : Compareceu
-Natan Spohr (Classificação): Compareceu
-Samuel Leite (Regressão): Não Compareceu
-Kenzo Nagamine (Não Supervisionado): Compareceu
-Lucas Caracas (Reamostragem Seleção): Compareceu
-Pedro Paulo (Métricas): Compareceu
-Lucas Oliveira (Árvores de Decisão): Não Compareceu
-Pedro Carvalho (Pré-Processamento): Não Compareceu
+- Marce Alves (Redes Neurais) : Compareceu
+- Natan Spohr (Classificação): Compareceu
+- Samuel Leite (Regressão): Não Compareceu
+- Kenzo Nagamine (Não Supervisionado): Compareceu
+- Lucas Caracas (Reamostragem Seleção): Compareceu
+- Pedro Paulo (Métricas): Compareceu
+- Lucas Oliveira (Árvores de Decisão): Não Compareceu
+- Pedro Carvalho (Pré-Processamento): Não Compareceu
 
 Reunião anotações:
 
