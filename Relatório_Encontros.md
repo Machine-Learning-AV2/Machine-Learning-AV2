@@ -30,3 +30,46 @@ Cada participante deve até dia 17:
   * Finalizar seu respectivo módulo;
   * Criar os casos de teste para seu módulo;
   * Criar uma documentação para seu módulo;
+  
+  
+  
+
+
+# Reunião dia 17/10/2026
+Participantes:
+Marce Alves (Redes Neurais) : Compareceu
+Natan Spohr (Classificação): Compareceu
+Samuel Leite (Regressão): Não Compareceu
+Kenzo Nagamine (Não Supervisionado): Compareceu
+Lucas Caracas (Reamostragem Seleção): Compareceu
+Pedro Paulo (Métricas): Compareceu
+Lucas Oliveira (Árvores de Decisão): Não Compareceu
+Pedro Carvalho (Pré-Processamento): Não Compareceu
+
+Reunião anotações:
+
+1) Padronizar a forma de fazer o as implementações deixando em arquivo único .py, com as classes. 
+
+
+2) Colocar comentários logo abaixo da classe explicando o funcionamento, para aparecer a explicação sempre que passar o cursor por cima do objeto no vs code. Exemplo:
+def perda(x: np.ndarray, y:np.ndarray, p:float | str, l:list = [], subs:float = 1) -> float:
+
+    """Retorna o valor da soma de uma função perda para um vetor de valores previstos e observados [..]
+    ”””
+
+3) Foi criado uma pasta “Documentation” para todos deixarem a documentação da sua respectiva parte, a documentação deve estar no formato markdown .md.
+
+4) Foi definido que os nomes dos arquivos, atributos do objeto, classe, métodos e funções devem estar em inglês.
+Nome de classe deve ser UpperCamelCase, exemplo: “MinhaClasse”  
+Nome de função/método deve ser snake case, exemplo: “minha_funcao”
+
+5) Padronizar o tipo de dados para array
+
+6) Esperar todo mundo terminar as suas respectivas partes para no final juntar e fazer o relatório e a documentação geral.
+
+7) Foi criando uma nova issue (SVM) para ser feito (classificação).
+
+8) Colocar tolerância opcional nos teste, com o padrão de 10e-9
+
+9) Sugestões de base de dados para analisar: ENEM (que possuimos vários relatórios e análises), Olimpíada
+

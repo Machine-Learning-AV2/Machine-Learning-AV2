@@ -1,7 +1,7 @@
 import numpy as np 
 
 
-def validar_matriz(X): #função auxiliar para verificar se os dados da amostra é válido
+def validade_matrix(X): #função auxiliar para verificar se os dados da amostra é válido
     X = np.asarray(X, dtype=float)
     if X.ndim != 2 or X.shape[0] == 0 or X.shape[1] == 0: #número de linha e Núemrod de colunas, dimensão dois porque temos as observações e também temos os atributos de cada observação
         raise TypeError("X deve ser 2D e não vazio: (n_amostras, n_atributos)")
@@ -11,7 +11,7 @@ def validar_matriz(X): #função auxiliar para verificar se os dados da amostra 
     return X
 
 
-def inteiro_positivo(valor, nome): #função auxiliar para verificar se o valor é válido
+def validate_positive_integer(valor, nome): #função auxiliar para verificar se o valor é válido
     if not isinstance(valor, (int, np.integer)) or isinstance(valor, bool): #verifica se o valor é um inteiro
         raise ValueError(f"{nome} deve ser um inteiro positivo.")
 
@@ -21,28 +21,28 @@ def inteiro_positivo(valor, nome): #função auxiliar para verificar se o valor 
     return int(valor)
 
 
-class Kmeans:
-    def __init__(self, k, max_iteracao=100):
-        self.k = inteiro_positivo(k, "k")
-        self.max_iteracao = inteiro_positivo(max_iteracao, "max_iteracao") #verificando se o valor é válido
-        self.centroides = None # vetor que vai armazemar os centroides (vetor)
+class KMeans:
+    def __init__(self, k, max_iterations=100):
+        self.k = validate_positive_integer(k, "k")
+        self.max_iterations = validate_positive_integer(max_iterations, "max_iterations") #verificando se o valor é válido
+        self.centroids = None # vetor que vai armazemar os centroids (vetor)
 
-    def estimar(self, X):
-        if self.centroides is None:
+    def predict(self, X):
+        if self.centroids is None:
             raise RuntimeError("chame fit antes de estimar")
 
-        X = validar_matriz(X)
+        X = validate_matrix(X)
 
-        if X.shape[1] != self.centroides.shape[1]: # shape seria: X.shape = (qnt_amostra, qnt_atributos), shape[1] é o número de colunas, ou seja, o número de atributos
-            raise ValueError(f"X tem {X.shape[1]} atributos, mas o modelo foi treinado com {self.centroides.shape[1]} atributos")
+        if X.shape[1] != self.centroids.shape[1]: # shape seria: X.shape = (qnt_amostra, qnt_atributos), shape[1] é o número de colunas, ou seja, o número de atributos
+            raise ValueError(f"X tem {X.shape[1]} atributos, mas o modelo foi treinado com {self.centroids.shape[1]} atributos")
 
-        distancias = np.sum((X[:, None, :] - self.centroides[None, :, :]) ** 2, axis=2) # (amostra, centroide, coordenada)
+        distancias = np.sum((X[:, None, :] - self.centroids[None, :, :]) ** 2, axis=2) # (amostra, centroide, coordenada)
         # Com sum(axis=2), somamos as coordenadas: (amostra, centroide), contendo as distâncias euclidianas ao quadrado  
     
         return np.argmin(distancias, axis=1) # Para cada amostra, retorna o índice do centroide mais próximo. Formato: (amostra) contendo o índice do centróide mais próximo.
                
     def fit(self, X):
-        X = validar_matriz(X)
+        X = validate_matrix(X)
 
         if self.k > len(X):       #verifica se o número de clusters é maior que o número de amostras
             raise ValueError(f"k={self.k} é maior que o número de amostras ({len(X)})")
@@ -53,93 +53,93 @@ class Kmeans:
 
         rng = np.random.default_rng()                   # gerador de números aleatórios
         indices = rng.choice(len(distintos), self.k, replace=False) # seleciona k índices aleatórios (índices distintos)
-        self.centroides = distintos[indices].copy()     #copiando os centroides escolhidos
+        self.centroids = distintos[indices].copy()     #copiando os centroids escolhidos
 
-        for _ in range(self.max_iteracao):
-            conjunto = self.estimar(X)          # atribuindo cada amostra ao centroide mais próximo
-            novos = self.centroides.copy()      # inicializando os valores dos novos centroides da iteração
+        for _ in range(self.max_iterations):
+            conjunto = self.predict(X)          # atribuindo cada amostra ao centroide mais próximo
+            novos = self.centroids.copy()      # inicializando os valores dos novos centroids da iteração
 
             for i in range(self.k):             # para cada centroide calcular seu novo valor como a média dos pontos do seu conjunto
                 pontos = X[conjunto == i]       # selecionar todos os X[j] cuja conjunto[j] = i
                 if len(pontos) > 0:
                     novos[i] = pontos.mean(axis=0)
 
-            if np.array_equal(self.centroides, novos): # se o valor dos novos centroides não alterou, então convergiu
+            if np.array_equal(self.centroids, novos): # se o valor dos novos centroids não alterou, então convergiu
                 break
 
-            self.centroides = novos             #atualizando o valor dos centroides
+            self.centroids = novos             #atualizando o valor dos centroids
         return self
 
 
-class Pca:
+class PCA:
     def __init__(self):
-        self.media = None                   # média de cada atributo original
-        self.componentes = None             # autovetores ordenados
-        self.autovalores = None             # variâncias associados aos autovetores (as direções)
+        self.mean = None                   # média de cada atributo original
+        self.components = None             # autovetores ordenados
+        self.eigenvalues = None             # variâncias associados aos autovetores (as direções)
 
     def fit(self, X):
-        X = validar_matriz(X)
+        X = validate_matrix(X)
         if len(X) < 2:                      # se a dimensão for <=1 não temos dimensão para reduzir, calcular covariância usa n - 1.
             raise ValueError("PCA precisa de pelo menos 2 amostras")
 
-        self.media = X.mean(axis=0)                 #média dos vetores colunas (amostra)
-        X_centralizado = X - self.media   #centralizando os dados
+        self.mean = X.mean(axis=0)                 #média dos vetores colunas (amostra)
+        X_centralizado = X - self.mean   #centralizando os dados
 
         cov = X_centralizado.T @ X_centralizado / (len(X) - 1)  #calculando a matriz de covariância amostral
         valores, vetores = np.linalg.eigh(cov)                                      #calculando os auto valores e os autovetores (padronizados)
 
-        indices = np.argsort(valores)[::-1]                     #pegando os índices dos autovalores em ordem decrescente
-        self.autovalores = np.maximum(valores[indices], 0.0)    #substituindo os autovalroes negativos por 0, que podem surgir a instabilidade numérica do ponto flutuante (variância negativo não exite)
-        self.componentes = vetores[:, indices]                  #reordenando as colunas (veotres colunas)
+        indices = np.argsort(valores)[::-1]                     #pegando os índices dos eigenvalues em ordem decrescente
+        self.eigenvalues = np.maximum(valores[indices], 0.0)    #substituindo os autovalroes negativos por 0, que podem surgir a instabilidade numérica do ponto flutuante (variância negativo não exite)
+        self.components = vetores[:, indices]                  #reordenando as colunas (veotres colunas)
 
         return self
 
-    def transformar(self, X, n_componentes=None):
-        if self.media is None:
+    def transform(self, X, n_components=None):
+        if self.mean is None:
             raise RuntimeError("chame fit antes de transformar")
 
-        X = validar_matriz(X)
-        if X.shape[1] != len(self.media):       # compatibilidade entre a dimensão dos dados e a média
+        X = validate_matrix(X)
+        if X.shape[1] != len(self.mean):       # compatibilidade entre a dimensão dos dados e a média
             raise ValueError(
-                f"X tem {X.shape[1]} atributos, esperado {len(self.media)}"
+                f"X tem {X.shape[1]} atributos, esperado {len(self.mean)}"
             )
 
-        n = self.componentes.shape[1] if n_componentes is None else inteiro_positivo(
-            n_componentes, "n_componentes"      #usar todos os componentes se None, se não verificar se o valor dado é válido
+        n = self.components.shape[1] if n_components is None else validate_positive_integer(
+            n_components, "n_components"      #usar todos os components se None, se não verificar se o valor dado é válido
         )
-        if n > self.componentes.shape[1]:       #se o número o n for maior que o número de atributos
-            raise ValueError(f"n_componentes={n} excede o número de atributos : {self.componentes.shape[1]}")
+        if n > self.components.shape[1]:       #se o número o n for maior que o número de atributos
+            raise ValueError(f"n_components={n} excede o número de atributos : {self.components.shape[1]}")
 
-        return (X - self.media) @ self.componentes[:, :n]
+        return (X - self.mean) @ self.components[:, :n]
 
-    def fit_transform(self, X, n_componentes=None):
-        return self.fit(X).transformar(X, n_componentes)
+    def fit_transform(self, X, n_components=None):
+        return self.fit(X).transform(X, n_components)
 
 # ====================================TESTES=======================================================================================================
 if __name__ == "__main__":
     rng = np.random.default_rng(0)
 
-    # KMEANS
+    # KMeans
     # dois grupos bem separados: um perto de (0,0) e outro perto de (10,10)
     X = np.vstack([rng.normal(0, 0.5, (50, 2)), rng.normal(10, 0.5, (50, 2))])
 
-    modelo = Kmeans(k=2).fit(X)
-    rotulos = modelo.estimar(X)
+    modelo = KMeans(k=2).fit(X)
+    rotulos = modelo.predict(X)
 
     assert len(set(rotulos[:50])) == 1   # primeiro grupo todo no mesmo cluster
     assert len(set(rotulos[50:])) == 1   # segundo grupo todo no mesmo cluster
     assert rotulos[0] != rotulos[50]     # clusters diferentes
-    print("Kmeans OK")
+    print("KMeans OK")
 
     # PCA
     # dados quase sobre a reta y = 2x
     t = rng.normal(size=200) 
     X = np.column_stack([t, 2 * t]) + 0.01 * rng.normal(size=(200, 2))
 
-    pca = Pca()
-    Z = pca.fit_transform(X, n_componentes=1)
+    PCA = PCA()
+    Z = PCA.fit_transform(X, n_components=1)
 
     esperado = np.array([1, 2]) / np.sqrt(5)                           # direção da reta
-    assert np.isclose(abs(pca.componentes[:, 0] @ esperado), 1, atol=1e-3)  # abs: sinal é arbitrário
+    assert np.isclose(abs(PCA.components[:, 0] @ esperado), 1, atol=1e-3)  # abs: sinal é arbitrário
     assert Z.shape == (200, 1)
     print("PCA OK")
