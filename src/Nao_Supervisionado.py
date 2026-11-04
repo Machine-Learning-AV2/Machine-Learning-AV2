@@ -22,6 +22,23 @@ def validate_positive_integer(valor, nome): #função auxiliar para verificar se
 
 
 class KMeans:
+    """
+    `Kmeans(k, max_iteracao=100)`
+
+    Agrupa as amostras em `k` clusters (algoritmo de Lloyd): sorteia `k` pontos distintos como centroides, atribui cada amostra ao centroide mais próximo e recalcula cada centroide como a média do seu cluster, até convergir ou atingir `max_iteracao`.
+
+    | Parâmetro | Descrição |
+    |---|---|
+    | `k` | Número de clusters (inteiro >= 1) |
+    | `max_iteracao` | Limite de iterações (inteiro >= 1) |
+
+    | Método | O que faz |
+    |---|---|
+    | `fit(X)` | Ajusta o modelo e guarda `centroides` `(k, n_atributos)`. Retorna `self`. Erro se `k` > nº de amostras ou nº de pontos distintos |
+    | `estimar(X)` | Retorna o índice do centroide mais próximo de cada amostra, formato `(n_amostras,)` |
+
+    Observação: a inicialização é aleatória (sem semente), então a numeração dos clusters pode mudar entre execuções.
+    """
     def __init__(self, k, max_iterations=100):
         self.k = validate_positive_integer(k, "k")
         self.max_iterations = validate_positive_integer(max_iterations, "max_iterations") #verificando se o valor é válido
@@ -72,6 +89,25 @@ class KMeans:
 
 
 class PCA:
+    """
+    ## `Pca()`
+
+    Encontra as direções de maior variância: centraliza os dados, calcula a covariância amostral e usa `np.linalg.eigh` para obter autovalores e autovetores, ordenados do maior para o menor.
+
+    | Atributo | Descrição |
+    |---|---|
+    | `media` | Média de cada atributo `(n_atributos,)` |
+    | `componentes` | Autovetores nas colunas `(n_atributos, n_atributos)` |
+    | `autovalores` | Variância de cada componente, em ordem decrescente |
+
+    | Método | O que faz |
+    |---|---|
+    | `fit(X)` | Calcula `media`, `componentes` e `autovalores`. Exige >= 2 amostras. Retorna `self` |
+    | `transformar(X, n_componentes=None)` | Centraliza e projeta nos primeiros `n_componentes` (todos se `None`). Retorna `(n_amostras, n_componentes)` |
+    | `fit_transform(X, n_componentes=None)` | `fit` seguido de `transformar` |
+
+    Observações: o sinal de cada componente é arbitrário, e o PCA não padroniza os dados (use o pré-processamento se os atributos tiverem escalas diferentes).
+    """
     def __init__(self):
         self.mean = None                   # média de cada atributo original
         self.components = None             # autovetores ordenados
