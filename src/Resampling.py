@@ -1,5 +1,5 @@
 import numpy as np
-from metricas import MSE
+from src.Metrics import MSE
 
 class KFold:
     def __init__(self,

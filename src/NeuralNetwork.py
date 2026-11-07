@@ -1,6 +1,6 @@
 import numpy as np
-from functions import functions, functions_name
-from metricas import MSE
+from Functions import functions, functions_name
+from Metrics import MSE
 from typing import Callable
 
 
