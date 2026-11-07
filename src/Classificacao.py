@@ -45,10 +45,11 @@ class KNN():
   def __init__(self, K: int = 5, p=2, normalize=False):
     """
     Inicia o modelo KNN
-
-    K: Inteiro que representa o tamanho da vizinhança observada em cada dado. Dessa vizinhança, a maioria elegerá a classe prevista.
-    p: A norma Lp (Σ Pi^p)^(1/p). Por padrão, a distância euclidiana dos pontos (L2).
-    normalize: Caso queira manter um desvio padrão consistente para todo preditor, torne isso True. Os dados serão normalizados para média 0 e variância 1.
+      --------------
+      K: Inteiro que representa o tamanho da vizinhança observada em cada dado. Dessa vizinhança, a maioria elegerá a classe prevista.
+      
+      p: A norma Lp (Σ Pi^p)^(1/p). Por padrão, a distância euclidiana dos pontos (L2).
+      normalize: Caso queira manter um desvio padrão consistente para todo preditor, torne isso True. Os dados serão normalizados para média 0 e variância 1.
     """
     
     if not isinstance(K, (int, np.integer)):
@@ -70,9 +71,10 @@ class KNN():
   def train(self, X: np.ndarray, Y: np.ndarray) -> None:
     """
     Treina o modelo KNN
+    -----------
+      X: array com todos os preditores dos dados de treino.
 
-    X: array com todos os preditores dos dados de treino.
-    Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
+      Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
     train_check(X, Y)
@@ -111,8 +113,8 @@ class KNN():
   def predict(self, L: np.ndarray) -> np.ndarray:
     """
     Retorna a previsão do KNN para os dados novos. O modelo deve ter sido treinado antes das previsões.
-
-    L: array de novos dados com seus preditores
+      -----------
+      L: array de novos dados com seus preditores
     """
     predictions = []
     for P in L:
@@ -482,8 +484,8 @@ print("LDA: ", modelLDA.predict(X_teste))
 print()
 
 # Teste métrica KNN
-modelKNN2 = KNN(K=2)
-modelKNN2sigma = KNN(K=2, normalize=True)
+modelKNN2 = KNN(2)
+modelKNN2sigma = KNN(2, normalize=True)
 X = np.array([[10, 10], [11, 11], [8, 9], [0, 0], [1, -1], [-1000, 1]])
 Y = np.array(["Direito", "Direito", "Direito", "Esquerdo", "Esquerdo", "Esquerdo"])
 X_teste = np.array([[11, 1]])

@@ -12,12 +12,11 @@ class KFold:
         """Inicialização do método Kfold
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída
-        k: número de folds (Default: 5)
-        hip: hiperparâmetros do modelo. Assume que o modelo possui um hiperparâmetro como seu único argumento posicional (Default: None)"""
-
+            model : classe do modelo a ser utilizado
+            data_x : np.ndarray com os dados de entrada
+            data_y : np.ndarray com os dados de saída
+            k : número de folds (Default: 5)
+            hip : hiperparâmetros do modelo. Assume que o modelo possui um hiperparâmetro como seu único argumento posicional (Default: None)"""
         self.model = model
         self.data_x = data_x
         self.data_y = data_y
@@ -60,9 +59,9 @@ class LOOCV:
         """Inicialização do método LOOCV
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída"""
+            model : classe do modelo a ser utilizado
+            data_x : np.ndarray com os dados de entrada
+            data_y : np.ndarray com os dados de saída"""
 
         self.model = model
         self.data_x = data_x
@@ -103,11 +102,11 @@ class Bootstrap:
         ou que aceita dados no mesmo padrão 
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída
-        n: número de iterações do bootstrap (default: 1000)
-        stat: estatística a ser calculada (default: MSE)"""
+            model : classe do modelo a ser utilizado
+            data_x : np.ndarray com os dados de entrada
+            data_y : np.ndarray com os dados de saída
+            n : número de iterações do bootstrap (default: 1000)
+            stat : estatística a ser calculada (default: MSE)"""
     
         self.model = model
         self.data_x = data_x
@@ -198,11 +197,11 @@ class FindHiperParam:
         que o modelo possui apenas um hiperparâmetro e que este é dado pelo único argumento posicional.
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída
-        grid: lista de valores de hiperparâmetros a serem testados (default: [0.1,1,10,100,1000])
-        step: passo para a busca (default: 10)"""
+            model: classe do modelo a ser utilizado
+            data_x: np.ndarray com os dados de entrada
+            data_y: np.ndarray com os dados de saída
+            grid: lista de valores de hiperparâmetros a serem testados (default: [0.1,1,10,100,1000])
+            step: passo para a busca (default: 10)"""
 
         self.grid = grid
         self.data_x = data_x
