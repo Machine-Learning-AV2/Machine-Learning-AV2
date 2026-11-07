@@ -1,7 +1,7 @@
 import numpy as np 
 
 
-def validade_matrix(X): #função auxiliar para verificar se os dados da amostra é válido
+def validate_matrix(X: np.ndarray) -> np.ndarray: #função auxiliar para verificar se os dados da amostra é válido
     X = np.asarray(X, dtype=float)
     if X.ndim != 2 or X.shape[0] == 0 or X.shape[1] == 0: #número de linha e Núemrod de colunas, dimensão dois porque temos as observações e também temos os atributos de cada observação
         raise TypeError("X deve ser 2D e não vazio: (n_amostras, n_atributos)")
@@ -11,7 +11,7 @@ def validade_matrix(X): #função auxiliar para verificar se os dados da amostra
     return X
 
 
-def validate_positive_integer(valor, nome): #função auxiliar para verificar se o valor é válido
+def validate_positive_integer(valor: int, nome: str) -> int: #função auxiliar para verificar se o valor é válido
     if not isinstance(valor, (int, np.integer)) or isinstance(valor, bool): #verifica se o valor é um inteiro
         raise ValueError(f"{nome} deve ser um inteiro positivo.")
 
@@ -23,28 +23,29 @@ def validate_positive_integer(valor, nome): #função auxiliar para verificar se
 
 class KMeans:
     """
-    `Kmeans(k, max_iteracao=100)`
+    Agrupa as amostras em k clusters: sorteia k pontos distintos como centroides, atribui cada amostra ao centroide mais próximo e recalcula cada centroide como a média do seu cluster, até convergir ou atingir max_iteracao.
 
-    Agrupa as amostras em `k` clusters (algoritmo de Lloyd): sorteia `k` pontos distintos como centroides, atribui cada amostra ao centroide mais próximo e recalcula cada centroide como a média do seu cluster, até convergir ou atingir `max_iteracao`.
+    Parâmetros de inicialização:
+    k: número de clusters (inteiro >= 1).
+    max_iteracao: limite de iterações (inteiro >= 1). Por padrão, 100.
+    seed: semente do gerador aleatório usado na inicialização (inteiro). Por padrão, 0.
 
-    | Parâmetro | Descrição |
-    |---|---|
-    | `k` | Número de clusters (inteiro >= 1) |
-    | `max_iteracao` | Limite de iterações (inteiro >= 1) |
+    Atributo (disponível após o fit):
+    centroides: centroide de cada cluster, um em cada linha.
 
-    | Método | O que faz |
-    |---|---|
-    | `fit(X)` | Ajusta o modelo e guarda `centroides` `(k, n_atributos)`. Retorna `self`. Erro se `k` > nº de amostras ou nº de pontos distintos |
-    | `estimar(X)` | Retorna o índice do centroide mais próximo de cada amostra, formato `(n_amostras,)` |
+    Métodos:
+    fit(X): ajusta o modelo e guarda os centroides. Retorna self. Levanta erro se k for maior que o número de amostras ou que o número de pontos distintos.
+    estimar(X): retorna o índice do centroide mais próximo de cada amostra.
 
-    Observação: a inicialização é aleatória (sem semente), então a numeração dos clusters pode mudar entre execuções.
+    Como a inicialização usa a semente, o resultado é reproduzível entre execuções com os mesmos dados.
     """
-    def __init__(self, k, max_iterations=100):
+    def __init__(self, k: int, max_iterations: int = 100, seed: int = 0):
         self.k = validate_positive_integer(k, "k")
         self.max_iterations = validate_positive_integer(max_iterations, "max_iterations") #verificando se o valor é válido
+        self.seed = seed # semente do gerador aleatório da inicialização
         self.centroids = None # vetor que vai armazemar os centroids (vetor)
 
-    def predict(self, X):
+    def predict(self, X: np.ndarray) -> np.ndarray:
         if self.centroids is None:
             raise RuntimeError("chame fit antes de estimar")
 
@@ -58,7 +59,7 @@ class KMeans:
     
         return np.argmin(distancias, axis=1) # Para cada amostra, retorna o índice do centroide mais próximo. Formato: (amostra) contendo o índice do centróide mais próximo.
                
-    def fit(self, X):
+    def fit(self, X: np.ndarray):
         X = validate_matrix(X)
 
         if self.k > len(X):       #verifica se o número de clusters é maior que o número de amostras
@@ -68,7 +69,7 @@ class KMeans:
         if self.k > len(distintos):
             raise ValueError(f"há apenas {len(distintos)} pontos distintos em X, menos que k={self.k}")
 
-        rng = np.random.default_rng()                   # gerador de números aleatórios
+        rng = np.random.default_rng(self.seed)          # gerador de números aleatórios (com semente)
         indices = rng.choice(len(distintos), self.k, replace=False) # seleciona k índices aleatórios (índices distintos)
         self.centroids = distintos[indices].copy()     #copiando os centroids escolhidos
 
@@ -90,30 +91,26 @@ class KMeans:
 
 class PCA:
     """
-    ## `Pca()`
+    Análise de Componentes Principais (PCA). Encontra as direções de maior variância dos dados: centraliza os dados, calcula a covariância amostral e obtém seus autovetores e autovalores com np.linalg.eigh, ordenados do maior para o menor autovalor.
 
-    Encontra as direções de maior variância: centraliza os dados, calcula a covariância amostral e usa `np.linalg.eigh` para obter autovalores e autovetores, ordenados do maior para o menor.
+    Atributos (disponíveis após o fit):
+    media: média de cada atributo.
+    componentes: autovetores, um em cada coluna.
+    autovalores: variância de cada componente.
 
-    | Atributo | Descrição |
-    |---|---|
-    | `media` | Média de cada atributo `(n_atributos,)` |
-    | `componentes` | Autovetores nas colunas `(n_atributos, n_atributos)` |
-    | `autovalores` | Variância de cada componente, em ordem decrescente |
+    Métodos:
+    fit(X): calcula os atributos acima. Exige pelo menos 2 amostras e retorna self.
+    transformar(X, n_componentes=None): centraliza X e projeta nos primeiros n_componentes (todos, se None).
+    fit_transform(X, n_componentes=None): fit seguido de transformar.
 
-    | Método | O que faz |
-    |---|---|
-    | `fit(X)` | Calcula `media`, `componentes` e `autovalores`. Exige >= 2 amostras. Retorna `self` |
-    | `transformar(X, n_componentes=None)` | Centraliza e projeta nos primeiros `n_componentes` (todos se `None`). Retorna `(n_amostras, n_componentes)` |
-    | `fit_transform(X, n_componentes=None)` | `fit` seguido de `transformar` |
-
-    Observações: o sinal de cada componente é arbitrário, e o PCA não padroniza os dados (use o pré-processamento se os atributos tiverem escalas diferentes).
+    O sinal de cada componente é arbitrário, e os dados não são padronizados (padronize antes se os atributos tiverem escalas diferentes).
     """
     def __init__(self):
-        self.mean = None                   # média de cada atributo original
+        self.mean = None                   # média de cada atributo original, para centralizar, pois calculamos a variancia amostral sobre a média
         self.components = None             # autovetores ordenados
         self.eigenvalues = None             # variâncias associados aos autovetores (as direções)
 
-    def fit(self, X):
+    def fit(self, X: np.ndarray):
         X = validate_matrix(X)
         if len(X) < 2:                      # se a dimensão for <=1 não temos dimensão para reduzir, calcular covariância usa n - 1.
             raise ValueError("PCA precisa de pelo menos 2 amostras")
@@ -122,7 +119,7 @@ class PCA:
         X_centralizado = X - self.mean   #centralizando os dados
 
         cov = X_centralizado.T @ X_centralizado / (len(X) - 1)  #calculando a matriz de covariância amostral
-        valores, vetores = np.linalg.eigh(cov)                                      #calculando os auto valores e os autovetores (padronizados)
+        valores, vetores = np.linalg.eigh(cov)                  #calculando os auto valores e os autovetores (padronizados)
 
         indices = np.argsort(valores)[::-1]                     #pegando os índices dos eigenvalues em ordem decrescente
         self.eigenvalues = np.maximum(valores[indices], 0.0)    #substituindo os autovalroes negativos por 0, que podem surgir a instabilidade numérica do ponto flutuante (variância negativo não exite)
@@ -130,7 +127,7 @@ class PCA:
 
         return self
 
-    def transform(self, X, n_components=None):
+    def transform(self, X: np.ndarray, n_components: int = None) -> np.ndarray:
         if self.mean is None:
             raise RuntimeError("chame fit antes de transformar")
 
@@ -148,7 +145,7 @@ class PCA:
 
         return (X - self.mean) @ self.components[:, :n]
 
-    def fit_transform(self, X, n_components=None):
+    def fit_transform(self, X: np.ndarray, n_components: int = None) -> np.ndarray:
         return self.fit(X).transform(X, n_components)
 
 # ====================================TESTES=======================================================================================================
@@ -162,7 +159,7 @@ if __name__ == "__main__":
     modelo = KMeans(k=2).fit(X)
     rotulos = modelo.predict(X)
 
-    assert len(set(rotulos[:50])) == 1   # primeiro grupo todo no mesmo cluster
+    assert len(set(rotulos[:50])) == 1   # primeiro grupo todo no mesmo cluster, verifica se tem o mesmo rótulo
     assert len(set(rotulos[50:])) == 1   # segundo grupo todo no mesmo cluster
     assert rotulos[0] != rotulos[50]     # clusters diferentes
     print("KMeans OK")
@@ -177,5 +174,6 @@ if __name__ == "__main__":
 
     esperado = np.array([1, 2]) / np.sqrt(5)                           # direção da reta
     assert np.isclose(abs(PCA.components[:, 0] @ esperado), 1, atol=1e-3)  # abs: sinal é arbitrário
+    # o produto escalar dever ser cos(0) = 1 para vetores iguais, pois o angulo entre eles é 0
     assert Z.shape == (200, 1)
     print("PCA OK")
