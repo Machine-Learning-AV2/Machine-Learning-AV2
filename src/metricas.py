@@ -258,3 +258,47 @@ def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
     if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
         raise TypeError('Os vetores devem conter dados numéricos para a norma')
     return norm_lp(y-x, p)
+
+# Derivada do risco empírico para calcular a descida de gradiente
+def dif_empirical_risk(x: np.ndarray, y:np.ndarray, p:float) -> np.ndarray:
+
+    """Retorna o valor da deerivada () do risco empírico de uma previsão segundo a função loss desejada
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados;
+    p : Parâmetro que define a função loss.
+
+    Funções loss implementadas
+    ----------------------------
+    p (numérico) = |y - x|^p
+
+    Exemplos
+    ---------
+    >>> x = np.array([1, 2, 4])
+    >>> y = np.array([1, 3, 5])
+    >>> dif_empirical_risk(x, y, 2) # Retorna np.array([0, -2/3, -2/3])"""
+
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        raise TypeError('Os vetores devem ser arrays numpy')
+    if x.size != y.size:
+        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
+
+    if isinstance(p, (int, float)):
+        if p < float('inf'):
+            if 1 <= p:
+                n = x.size
+
+                # Caso de descontinuidade
+                if p==1 and abs(y-x)<1e-9:
+                    return np.zeros(n)
+                
+                # Derivada df/dx = -p*sign(y-x)*|y-x|**(p-1)/n
+                return (p * abs(y-x)**(p-1) * -np.sign(y-x)) / n
+            else:
+                raise ValueError('O parâmetro deve ser maior ou igual a 1')
+        else:
+            raise ValueError('O parâmetro deve ser um valor finito')
+    else:
+        raise TypeError('O parâmetro deve ser um valor numérico')
