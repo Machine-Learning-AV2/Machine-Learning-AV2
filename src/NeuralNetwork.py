@@ -1,6 +1,7 @@
 import numpy as np
-from functions import functions, functions_name
+from Functions import functions, functions_name
 from metricas import MSE
+# from metricas import MSE, DMSE
 from typing import Callable
 
 
@@ -10,7 +11,7 @@ class NeuralNetwork:
                  bias_interval: tuple[float, float] = (0, 1), weight_interval: tuple[float, float] = (0, 1), 
                  seed:int = 782) -> None:
         """
-            Inicializa a classe NeuralNetwork
+            Intancia um elemento a classe NeuralNetwork com pesos e vieses aleatórios dentro do intervalo estipulado.
             
             Parâmetros
             -----------
@@ -45,10 +46,10 @@ class NeuralNetwork:
         self.activate_functions += [output_activation]
         self._function_dictionary = function_dictionary.copy()
 
-        self.check_activate(self.activate_functions, self._function_dictionary)
+        self._check_activate(self.activate_functions, self._function_dictionary)
 
     @staticmethod
-    def check_activate(activate_functions: list[str], function_dictionary: dict[str, tuple[Callable, Callable]]) -> None:
+    def _check_activate(activate_functions: list[str], function_dictionary: dict[str, tuple[Callable, Callable]]) -> None:
         """
             Verifica se todas as funções de ativação usadas estão no mapa
             
@@ -62,7 +63,7 @@ class NeuralNetwork:
                 raise ValueError(f"ERROR: Função de ativação inválida: {function_name}")
 
     @staticmethod
-    def check_input(x: np.ndarray) -> np.ndarray:
+    def _check_input(x: np.ndarray) -> np.ndarray:
         """
             Verifica se x é valido e arruma suas dimenções 
             
@@ -128,7 +129,7 @@ class NeuralNetwork:
         
         return array
 
-    def train(self, X: np.ndarray, y: np.ndarray, learn_rate: float = 0.1, 
+    def train(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = lambda y, y_pred: 2*(y_pred - y)/ y.shape[1], learn_rate: float = 0.1, 
               batch: int = 10, epochs: int = 1000, tol = 1e-9) -> None:
         """
             Treina a rede neural a partir dos dados X, y
@@ -137,24 +138,25 @@ class NeuralNetwork:
             -----------
             X np.ndarray : Matriz P x N dos dados de treino;
             y np.ndarray : Matriz S x N das saidas de treino;
+            loss Callable : Função perda para aprendizado;
+            loss_diff Callable : Derivada da função perda para backpropagation;
             learn_rate float : Taxa de aprendizado (0.1 por padrão);
             batch int : Quantidade esperada de elementos por balde (10 por padrão);
             epochs int : Quantidade de interações nos dados de treino (1000 por padrão).
         """
 
-        self._loss = {
-            'MSE': (MSE, lambda y, y_pred: 2*(y_pred - y)/ y.shape[1]) 
-        }
+        self.loss = loss
+        self.loss_diff = loss_diff
 
         loss_function: str = 'MSE' #COLOCAR PARA PARAMETROS
 
-        X = self.check_input(X)
-        y = self.check_input(y)
+        X = self._check_input(X)
+        y = self._check_input(y)
 
 
         index: np.ndarray = np.arange(X.shape[1])
 
-        loss = self._loss[loss_function][0](y, self.prevision(X))
+        loss = self.loss(y, self.prevision(X))
         for epoch in range(epochs):
             self._rng.shuffle(index)
 
@@ -164,16 +166,16 @@ class NeuralNetwork:
                 else:
                     B = index[i: i+batch]
 
-                self.backpropagation(X[:, B], y[:, B], loss_function = loss_function, learn_rate = learn_rate)
+                self._backpropagation(X[:, B], y[:, B], loss_function = loss_function, learn_rate = learn_rate)
 
-            loss_aux = self._loss[loss_function][0](y, self.prevision(X))
+            loss_aux = self.loss(y, self.prevision(X))
 
             if abs(loss - loss_aux) < tol:
                 break
             else:
                 loss = loss_aux
 
-    def backpropagation(self, x: np.ndarray, y: np.ndarray, loss_function: str = 'MSE', learn_rate: float = 0.1) -> None:
+    def _backpropagation(self, x: np.ndarray, y: np.ndarray, loss_function: str = 'MSE', learn_rate: float = 0.1) -> None:
         """
             Calcula as decidas de gradiente para cada peso e viés.
             
@@ -190,7 +192,7 @@ class NeuralNetwork:
         cost: list[np.ndarray] = [np.array([]) for _ in range(1, len(self.layers))]
 
         activate_function = self.activate_functions[-1]
-        cost[-1] = self._loss[loss_function][1](y, self._state_layers[-1]) * self._function_dictionary[activate_function][1](self._state_linear[-1])
+        cost[-1] = self.loss_diff(y, self._state_layers[-1]) * self._function_dictionary[activate_function][1](self._state_linear[-1])
 
         for level in range(len(self.layers)-3, -1, -1):
             activate_function = self.activate_functions[level]
@@ -201,21 +203,22 @@ class NeuralNetwork:
             self.bias[level] -= learn_rate * np.sum(cost[level], axis=1, keepdims=True)
 
 
-    def prevision(self, x: float | np.ndarray, save_states: bool = False, classify = False) -> np.ndarray:
+    def prevision(self, x: float | np.ndarray, save_states: bool = False, classify: bool = False) -> np.ndarray:
         """
             Calcula o valor de saida da rede neural com pesos e vieses atuais
             
             Parâmetros
             -----------
             x float | np.ndarray : Vetor ou matriz que queremos prever o resultado;
-            save_states bool : Define se queremos salvar os valores de cada layer ou não.
+            save_states bool : Define se queremos salvar os valores de cada layer ou não;
+            classify bool : Define se queremos retornar o vetor de probabilidade ou atribuir o elemento a uma classe.
 
             Retorna
             -----------
             Valor de saida da rede neural com entrada x
         """
 
-        x = self.check_input(x)
+        x = self._check_input(x)
 
         y: np.ndarray = x.copy()
 
