@@ -1,135 +1,326 @@
 import numpy as np
 
-class ArvoresDecisaoClassificacao:
-  def __init__(self,max_profundidade=5, min_amostras=2):
-    self.max_profundidade = max_profundidade
-    self.min_amostras = min_amostras
-    self.raiz = None
-    self.n_caracteristicas = None
 
-  def _gini(self,y):
-    if len(y) == 0:
-      return 0.0
-      
-    _, contagens = np.unique(y, return_counts=True)
-    probabilidades = contagens / len(y)
-    return 1.0 - np.sum(probabilidades**2)
+class DecisionTreeClassification:
+    def __init__(self, max_depth=5, min_samples=2):
+        self.max_depth = max_depth
+        self.min_samples = min_samples
+        self.root = None
+        self.n_caracteristicas = None
 
-  def _melhor_divisao(self,X,y):
-    n_amostras, n_caracteristicas = X.shape
-    melhor_gini = self._gini(y)
-    melhor_divisao = None
+    def _gini(self, y):
+        if len(y) == 0:
+            return 0.0
 
-    for j in range(n_caracteristicas):
-      valores = np.unique(X[:,j])
-      limites = (valores[:-1]+valores[1:])/2
-      
-      for limite in limites:
-        mascara_esquerda = X[:,j]<= limite
-        y_esquerda = y[mascara_esquerda]
-        y_direita = y[~mascara_esquerda]
+        _, counting = np.unique(y, return_counts=True)
+        probabilities = counting / len(y)
+        return 1.0 - np.sum(probabilities**2)
 
-        n_esquerda = len(y_esquerda)
-        n_direita = len(y_direita)
+    def _best_division(self, X, y):
+        n_samples, n_predictors = X.shape
+        best_gini = self._gini(y)
+        best_division = None
 
-        gini_esquerda = self._gini(y_esquerda)
-        gini_direita = self._gini(y_direita)
+        for j in range(n_predictors):
+            values = np.unique(X[:, j])
+            limits = (values[:-1] + values[1:]) / 2
 
-        gini_ponderado = (
-          (n_esquerda/n_amostras)*gini_esquerda
-          +(n_direita/n_amostras)*gini_direita
-        )
+            for limit in limits:
+                mask_left = X[:, j] <= limit
+                y_left = y[mask_left]
+                y_right = y[~mask_left]
 
-        if gini_ponderado<melhor_gini:
-          melhor_gini = gini_ponderado
-          melhor_divisao = (j,limite)
+                n_left = len(y_left)
+                n_right = len(y_right)
 
-    return melhor_divisao
+                gini_left = self._gini(y_left)
+                gini_right = self._gini(y_right)
 
-  def _construir_arvore(self, X, y, profunidade =0):
-    classes, contagens = np.unique(y, return_counts=True)
-    classe_majoritaria = classes[np.argmax(contagens)]
+                gini_weighted = (
+                    (n_left / n_samples) * gini_left
+                    + (n_right / n_samples) * gini_right
+                )
 
-    if (len(classes)) ==1:
-      or profundidade >=self.max_profundidade
-      or len(y) < self.min_amostras):
-      return {"folha":True, "Valor": classe_majoritaria}
+                if gini_weighted < best_gini:
+                    best_gini = gini_weighted
+                    best_division = (j, limit)
 
-    divisao = self._melhor_divisao(X,y)
+        return best_division
 
-    if divisao is None:
-      return {"folha": True, "valor": classe_majoritaria}
-    j,limite = divisao
-    mascara = X[:,j] <= limite
+    def _build_tree(self, X, y, depth=0):
+        classes, counting = np.unique(y, return_counts=True)
+        class_majority = classes[np.argmax(counting)]
 
-    return {
-      "folha": False,
-      "carateristicas": j,
-      "limite": limite,
-      "esquerda": self._construir_arvore(
-        X[mascara], y[mascara], profundidade+1
-      ),
-      "direita": self._cosntruir_arvore(
-        X[~mascara], y[~mascara],profundidade+1
-      )
-    }
+        if (
+            len(classes) == 1
+            or depth >= self.max_depth
+            or len(y) < self.min_samples
+        ):
+            return {"folha": True, "valor": class_majority}
 
-   def ajustar(self, X,y):
-     X = np.asrray(X, dtype=float)
-     y = np.asarray(y)
+        division = self._best_division(X, y)
 
-     if X.ndim!=2:
-       raise ValueError("X deve ser uma matriz BI")
+        if division is None:
+            return {"folha": True, "valor": class_majority}
 
-     if y.ndim!=1:
-       raise ValueError("y deve ser um vetor UNI")
+        j, limit = division
+        mask = X[:, j] <= limit
 
-     if len(X)!= len(y):
-       raise ValueError("X e y devem ter o mesmo número de exemplos")
+        return {
+            "folha": False,
+            "caracteristica": j,
+            "limite": limit,
+            "esquerda": self._build_tree(
+                X[mask], y[mask], depth + 1
+            ),
+            "direita": self._build_tree(
+                X[~mask], y[~mask], depth + 1
+            )
+        }
 
-     if len(y) == 0:
-       raise ValueError("os dados de treinamento nao podem estar vazios")
+    def adjust(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y)
 
-     if X.shape[1] == 0:
-       raise ValueError("X deve ter pelo menos uma caracteristica")
+        if X.ndim != 2:
+            raise ValueError("X deve ser uma matriz bidimensional")
 
-     self.raiz = self._construir_arvore(X,y)
+        if y.ndim != 1:
+            raise ValueError("y deve ser um vetor unidimensional")
 
-     return self
+        if len(X) != len(y):
+            raise ValueError("X e y devem ter o mesmo número de exemplos")
 
-  def _prever_amostra(self,x,no):
-    if no["folha"]:
-      return no["valor"]
+        if len(y) == 0:
+            raise ValueError("Os dados de treinamento não podem estar vazios")
 
-    j = no["caracteristica"]
+        if X.shape[1] == 0:
+            raise ValueError("X deve ter pelo menos uma característica")
 
-    if x[j]<=no["limite"]:
-      return self._prever_amostra(x,no["esquerda"]
+        self.root = self._build_tree(X, y)
 
-     return self._prever_amostra(x,no["direita"])
+        return self
+
+    def _predict_sample(self, x, no):
+        if no["folha"]:
+            return no["valor"]
+
+        j = no["caracteristica"]
+
+        if x[j] <= no["limite"]:
+            return self._predict_sample(x, no["esquerda"])
+        else:
+            return self._predict_sample(x, no["direita"])
+
+    def predict(self, X):
+        if self.root is None:
+            raise ValueError(
+                "A árvore de decisão precisa ser treinada antes de prever"
+            )
+
+        X = np.asarray(X, dtype=float)
+
+        if X.ndim != 2:
+            raise ValueError("X deve ser uma matriz bidimensional")
+
+        predictions = [
+            self._predict_sample(x, self.root)
+            for x in X
+        ]
+
+        return np.asarray(predictions)
 
 
-  def prever(self,X):
-    if self.raiz is None:
-      raise ValueError("A arvore de decisão precisa treinada antes de prever")
+class DecisionTreeRegression:
+    def __init__(self, max_depth=5, min_samples=2):
+        self.max_depth = max_depth
+        self.min_samples = min_samples
+        self.root = None
 
-    X=np.asarray(X,dtype=float)
+    def _mse(self, y):
+        if len(y) == 0:
+            return 0.0
 
-    if X.ndim!=2:
-      raise ValueError("X deve ser uma matriz BI")
+        mean = np.mean(y)
+        return np.mean((y - mean)**2)
 
-    previsoes = [
-      self._prever_amostra(x,self.raiz)
-      for x in X
-    ]
-    return np,asarray(previsoes)
-  
- if __name__ == "__main__":
-   X = np.array([1], [2], [3], [4])
-   y = np.array("A", "A", "B", "B")
+    def _best_division(self, X, y):
+        n_samples, n_predictors = X.shape
+        best_error = self._mse(y)
+        best_division = None
 
-   modelo = ArvoreDecisaoClassificacao()
-   modelo.ajustar(X,y)
+        for j in range(n_predictors):
+            values = np.unique(X[:, j])
+            limits = (values[:-1] + values[1:]) / 2
 
-   print("Classificação")
-   print(modelo.prever(X))
+            for limit in limits:
+                mask = X[:, j] <= limit
+                y_left = y[mask]
+                y_right = y[~mask]
+
+                n_left = len(y_left)
+                n_right = len(y_right)
+
+                error_weighted = (
+                    (n_left / n_samples) * self._mse(y_left)
+                    + (n_right / n_samples) * self._mse(y_right)
+                )
+
+                if error_weighted < best_error:
+                    best_error = error_weighted
+                    best_division = (j, limit)
+
+        return best_division
+
+    def _build_tree(self, X, y, depth=0):
+        mean = float(np.mean(y))
+
+        if (
+            depth >= self.max_depth
+            or len(y) < self.min_samples
+            or np.all(y == y[0])
+        ):
+            return {"folha": True, "valor": mean}
+
+        division = self._best_division(X, y)
+
+        if division is None:
+            return {"folha": True, "valor": mean}
+
+        j, limit = division
+        mask = X[:, j] <= limit
+
+        return {
+            "folha": False,
+            "caracteristica": j,
+            "limite": limit,
+            "esquerda": self._build_tree(
+                X[mask], y[mask], depth + 1
+            ),
+            "direita": self._build_tree(
+                X[~mask], y[~mask], depth + 1
+            )
+        }
+
+    def adjust(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+
+        if X.ndim != 2:
+            raise ValueError("X deve ser armazenada em uma matriz bidimensional")
+
+        if y.ndim != 1:
+            raise ValueError("y deve ser um vetor unidimensional")
+
+        if len(X) != len(y):
+            raise ValueError("X e y devem ter o mesmo número de exemplos")
+
+        if len(y) == 0:
+            raise ValueError("Os dados de treinamento não podem estar vazios")
+
+        if X.shape[1] == 0:
+            raise ValueError("X deve ter pelo menos uma característica")
+
+        self.root = self._build_tree(X, y)
+
+        return self
+
+    def _predict_sample(self, x, no):
+        if no["folha"]:
+            return no["valor"]
+
+        j = no["caracteristica"]
+
+        if x[j] <= no["limite"]:
+            return self._predict_sample(x, no["esquerda"])
+
+        return self._predict_sample(x, no["direita"])
+
+    def predict(self, X):
+        if self.root is None:
+            raise ValueError(
+                "A árvore precisa ser treinada antes de prever"
+            )
+
+        X = np.asarray(X, dtype=float)
+
+        if X.ndim != 2:
+            raise ValueError("X deve ser uma matriz bidimensional")
+
+        if X.shape[1] == 0:
+            raise ValueError("X deve ter pelo menos uma característica")
+
+        predictions = [
+            self._predict_sample(x, self.root)
+            for x in X
+        ]
+
+        return np.asarray(predictions)
+
+
+
+if __name__ == "__main__":
+
+    # Teste de classificação
+    X_train = np.array([
+        [1.0, 1.0, 1.5],
+        [1.5, 2.0, 1.0],
+        [2.0, 1.0, 2.0],
+        [7.0, 1.0, 7.0],
+        [7.5, 2.0, 8.0],
+        [8.0, 1.0, 7.5],
+        [4.0, 7.0, 4.0],
+        [4.5, 8.0, 5.0],
+        [5.0, 7.0, 4.5]
+    ])
+
+    y_train = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+
+    X_test = np.array([
+        [1.8, 1.5, 1.5],
+        [7.8, 1.5, 7.5],
+        [4.5, 7.5, 4.5]
+    ])
+
+    y_test = np.array([0, 1, 2])
+
+    modelo = DecisionTreeClassification()
+    modelo.adjust(X_train, y_train)
+
+    previsoes = modelo.predict(X_test)
+
+    print("Classificação")
+    print("Previsões:", previsoes)
+    print("Classes reais:", y_test)
+    print("Acurácia:", np.mean(previsoes == y_test))
+
+
+    # Teste de regressão
+    X_train_reg = np.array([
+        [1.0, 1.0, 1.0],
+        [2.0, 1.0, 2.0],
+        [1.0, 2.0, 2.0],
+        [3.0, 2.0, 1.0],
+        [2.0, 3.0, 1.0],
+        [3.0, 3.0, 2.0]
+    ])
+
+    y_train_reg = np.array([4.0, 5.0, 5.0, 7.0, 9.0, 10.0])
+
+    X_test_reg = np.array([
+        [1.5, 1.5, 1.5],
+        [2.5, 2.0, 1.5]
+    ])
+
+    y_test_reg = np.array([4.5, 7.0])
+
+    modelo_reg = DecisionTreeRegression()
+    modelo_reg.adjust(X_train_reg, y_train_reg)
+
+    previsoes_reg = modelo_reg.predict(X_test_reg)
+
+    print("\nRegressão")
+    print("Previsões:", previsoes_reg)
+    print("Valores reais:", y_test_reg)
+    print("Erro absoluto médio:",
+          np.mean(np.abs(previsoes_reg - y_test_reg)))
