@@ -170,6 +170,8 @@ def empirical_risk(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np
     else:
         raise TypeError('Método não implementado')
 
+def classification_error(x: np.ndarray, y: np.ndarray) -> float:
+    return empirical_risk(x, y, 'ind')
 
 # (Mean Absolute Error - Erro Absoluto Médio)
 def MAE(x:np.ndarray, y:np.ndarray) -> float:
