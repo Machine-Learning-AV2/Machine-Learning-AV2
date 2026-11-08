@@ -2,6 +2,8 @@
 
 Arquivo: `src/nao_supervisionado.py` (apenas NumPy)
 
+Contém **K-means** (agrupamento) e **PCA** (redução de dimensionalidade). `X` é sempre uma matriz `(n_amostras, n_atributos)`. Chamar `estimar` ou `transformar` antes do `fit` levanta `RuntimeError`.
+
 
 ## Funções auxiliares
 
