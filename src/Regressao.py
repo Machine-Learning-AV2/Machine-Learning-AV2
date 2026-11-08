@@ -57,9 +57,6 @@ class Regressao:
 
 
 class Lasso(Regressao):
-<<<<<<< HEAD
-    def __init__(self, alpha, max_iter=1000, tol=1e-6):
-=======
     """
     Regressão Lasso por descida cíclica de coordenadas.
 
@@ -75,7 +72,6 @@ class Lasso(Regressao):
     """
 
     def __init__(self, alpha=1.0, max_iter=1000, tol=1e-6):
->>>>>>> 2e0fee3 (Pequenas alteracoes na regressao e adicao de testes regressao)
         super().__init__()
 
         if not np.isfinite(alpha) or alpha < 0:
