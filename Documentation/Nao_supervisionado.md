@@ -1,69 +1,70 @@
 # Módulo Não Supervisionado
 
-Arquivo: `src/nao_supervisionado.py` (apenas NumPy)
+Arquivo: `src/unsupervised_learning.py` (apenas NumPy)
 
-Contém **K-means** (agrupamento) e **PCA** (redução de dimensionalidade). `X` é sempre uma matriz `(n_amostras, n_atributos)`. Chamar `estimar` ou `transformar` antes do `fit` levanta `RuntimeError`.
+Contém **K-means** (agrupamento) e **PCA** (redução de dimensionalidade). `X` é sempre uma matriz `(n_amostras, n_atributos)`. Chamar `predict` ou `transform` antes do `fit` levanta `RuntimeError`.
 
 
 ## Funções auxiliares
 
-- `validar_matriz(X)`: converte `X` para `float` 2D. Levanta `TypeError` se não for 2D ou estiver vazio, e `ValueError` se tiver `NaN` ou infinito.
-- `inteiro_positivo(valor, nome)`: garante que `valor` é um inteiro >= 1. Levanta `ValueError` caso contrário.
+- `validate_matrix(X)`: converte `X` para `float` 2D. Levanta `TypeError` se não for 2D ou estiver vazio, e `ValueError` se tiver `NaN` ou infinito.
+- `validate_positive_integer(valor, nome)`: garante que `valor` é um inteiro >= 1. Levanta `ValueError` caso contrário.
 
-## `Kmeans(k, max_iteracao=100)`
+## `KMeans(k, max_iterations=100, seed=0)`
 
-Agrupa as amostras em `k` clusters (algoritmo de Lloyd): sorteia `k` pontos distintos como centroides, atribui cada amostra ao centroide mais próximo e recalcula cada centroide como a média do seu cluster, até convergir ou atingir `max_iteracao`.
+Agrupa as amostras em `k` clusters (algoritmo de Lloyd): sorteia `k` pontos distintos como centroides, atribui cada amostra ao centroide mais próximo e recalcula cada centroide como a média do seu cluster, até convergir ou atingir `max_iterations`.
 
 | Parâmetro | Descrição |
 |---|---|
 | `k` | Número de clusters (inteiro >= 1) |
-| `max_iteracao` | Limite de iterações (inteiro >= 1) |
+| `max_iterations` | Limite de iterações (inteiro >= 1) |
+| `seed` | Semente do gerador aleatório da inicialização |
 
 | Método | O que faz |
 |---|---|
-| `fit(X)` | Ajusta o modelo e guarda `centroides` `(k, n_atributos)`. Retorna `self`. Erro se `k` > nº de amostras ou nº de pontos distintos |
-| `estimar(X)` | Retorna o índice do centroide mais próximo de cada amostra, formato `(n_amostras,)` |
+| `fit(X)` | Ajusta o modelo e guarda `centroids` `(k, n_atributos)`. Retorna `self`. Erro se `k` > nº de amostras ou nº de pontos distintos |
+| `predict(X)` | Retorna o índice do centroide mais próximo de cada amostra, formato `(n_amostras,)` |
 
-Observação: a inicialização é aleatória (sem semente), então a numeração dos clusters pode mudar entre execuções.
+Observação: a inicialização usa a semente (`seed`), então o resultado é reproduzível entre execuções com os mesmos dados.
 
 ```python
-modelo = Kmeans(k=2).fit(X)
-rotulos = modelo.estimar(X)
+modelo = KMeans(k=2).fit(X)
+rotulos = modelo.predict(X)
 ```
 
-## `Pca()`
+## `PCA()`
 
 Encontra as direções de maior variância: centraliza os dados, calcula a covariância amostral e usa `np.linalg.eigh` para obter autovalores e autovetores, ordenados do maior para o menor.
 
 | Atributo | Descrição |
 |---|---|
-| `media` | Média de cada atributo `(n_atributos,)` |
-| `componentes` | Autovetores nas colunas `(n_atributos, n_atributos)` |
-| `autovalores` | Variância de cada componente, em ordem decrescente |
+| `mean` | Média de cada atributo `(n_atributos,)` |
+| `components` | Autovetores nas colunas `(n_atributos, n_atributos)` |
+| `eigenvalues` | Variância de cada componente, em ordem decrescente |
 
 | Método | O que faz |
 |---|---|
-| `fit(X)` | Calcula `media`, `componentes` e `autovalores`. Exige >= 2 amostras. Retorna `self` |
-| `transformar(X, n_componentes=None)` | Centraliza e projeta nos primeiros `n_componentes` (todos se `None`). Retorna `(n_amostras, n_componentes)` |
-| `fit_transform(X, n_componentes=None)` | `fit` seguido de `transformar` |
+| `fit(X)` | Calcula `mean`, `components` e `eigenvalues`. Exige >= 2 amostras. Retorna `self` |
+| `transform(X, n_components=None)` | Centraliza e projeta nos primeiros `n_components` (todos se `None`). Retorna `(n_amostras, n_components)` |
+| `fit_transform(X, n_components=None)` | `fit` seguido de `transform` |
 
 Observações: o sinal de cada componente é arbitrário, e o PCA não padroniza os dados (use o pré-processamento se os atributos tiverem escalas diferentes).
 
 ```python
-pca = Pca()
-Z = pca.fit_transform(X, n_componentes=2)
-variancia_explicada = pca.autovalores / pca.autovalores.sum()
+pca = PCA()
+Z = pca.fit_transform(X, n_components=2)
+variancia_explicada = pca.eigenvalues / pca.eigenvalues.sum()
 ```
 
 ## Justificativas
 
-- **Interface `fit` / `estimar` / `transformar`**: separa o aprendizado da aplicação em dados novos.
+- **Interface `fit` / `predict` / `transform`**: separa o aprendizado da aplicação em dados novos.
 - **`eigh`**: a covariância é simétrica, então é mais estável que `eig`.
 - **Validação das entradas**: erros claros em vez de resultados errados.
 
 ## Testes
 
-No final do arquivo, em `if __name__ == "__main__":`. Rodar com `python src/nao_supervisionado.py`. Depois serão movidos para `tests/test_nao_supervisionado.py`.
+No final do arquivo, em `if __name__ == "__main__":`. Rodar com `python src/unsupervised_learning.py`. Depois serão movidos para `tests/test_nao_supervisionado.py`.
 
 - **K-means**: dois grupos bem separados devem cair em dois clusters diferentes.
 - **PCA**: dados sobre a reta `y = 2x` devem ter o primeiro componente na direção `(1,2)/√5`, e a projeção com 1 componente deve ter formato `(200, 1)`.
