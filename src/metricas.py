@@ -314,15 +314,13 @@ def dif_empirical_risk(x: np.ndarray, y:np.ndarray, p:float, tol:float = 1e-9) -
         if p < float('inf'):
             if 1 <= p:
                 n, *m = x.shape
-                if n != x.size:
-                    raise TypeError('x e y devem ser vetores unidimensionais')
 
                 # Caso de descontinuidade
                 if p==1:
                     return np.where(np.abs(y - x) < tol, 0.0, (-np.sign(y - x)) / n)
 
                 # Derivada df/dx = -p*sign(y-x)*|y-x|**(p-1)/n
-                return (p * abs(y-x)**(p-1) * -np.sign(y-x)) / n
+                return (-p * abs(y-x)**(p-1) * np.sign(y-x)) / n
             else:
                 raise ValueError('O parâmetro deve ser maior ou igual a 1')
         else:
