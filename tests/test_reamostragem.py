@@ -2,7 +2,7 @@ if __name__ == "__main__":
     from src.Reamostragem import KFold, LOOCV, Bootstrap, FindHiperParam
     from src.Regressao import RegressaoPolinomial
     import numpy as np
-    seed = 42
+    seed = 46
     np.random.seed(seed)
     class ConstantModel:
         """Classe de teste com y fixo"""
@@ -140,6 +140,149 @@ if __name__ == "__main__":
 
         print(f"KFold MSE para SVM: {mse}")
 
+    def test_with_logistic_regression():
+        from src.Classificacao import Logistic_Regression
+        from src.metricas import classification_error
+        # Criar um conjunto de dados de classificação
+        X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
+        Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
+
+        # Inicializar o modelo Logistic Regression
+        logreg_model = Logistic_Regression
+        # Aplicar KFold com o modelo Logistic Regression
+        kfold = KFold(logreg_model, X, Y, hip=1, stat=classification_error)
+        mse = kfold.folds()
+
+        print(f"KFold MSE para Logistic Regression: {mse}")
+
+    def test_with_LDA():
+        from src.Classificacao import LDA
+        from src.metricas import classification_error
+        # Criar um conjunto de dados de classificação
+        X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
+        Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
+
+        # Inicializar o modelo LDA
+        lda_model = LDA
+        # Aplicar KFold com o modelo LDA
+        kfold = KFold(lda_model, X, Y, stat=classification_error)
+        mse = kfold.folds()
+
+        print(f"KFold MSE para LDA: {mse}")
+
+    def test_with_QDA():
+        from src.Classificacao import QDA
+        from src.metricas import classification_error
+        # Criar um conjunto de dados de classificação
+
+        import numpy as np
+
+
+
+
+        X,Y = generate_QDA_dataset()
+        # Inicializar o modelo QDA
+        qda_model = QDA
+        # Aplicar KFold com o modelo QDA
+        kfold = KFold(qda_model, X, Y,k=3, stat=classification_error)
+        mse = kfold.folds()
+
+        print(f"KFold MSE para QDA: {mse}")
+
+    def generate_QDA_dataset():
+        np.random.seed(42)
+
+        n = 30
+
+        # Three classes with different means and covariance matrices
+        X_red = np.random.multivariate_normal(
+            mean=[0, 0],
+            cov=[[2, 0.5], [0.5, 1]],
+            size=n
+        )
+
+        X_blue = np.random.multivariate_normal(
+            mean=[5, 5],
+            cov=[[1, -0.3], [-0.3, 2]],
+            size=n
+        )
+
+        X_green = np.random.multivariate_normal(
+            mean=[0, 6],
+            cov=[[1.5, 0.7], [0.7, 1]],
+            size=n
+        )
+
+        X = np.vstack([X_red, X_blue, X_green])
+
+        Y = np.array(
+            ["Red"] * n +
+            ["Blue"] * n +
+            ["Green"] * n
+        )
+
+        # Shuffle the observations
+        indices = np.random.permutation(len(Y))
+        X = X[indices]
+        Y = Y[indices]
+
+        return X, Y
+
+    def test_decisionTree():
+        from src.decision_tree import DecisionTreeClassification, DecisionTreeRegression
+        from src.Reamostragem import KFold
+        from src.metricas import classification_error, MSE
+        import numpy as np
+
+        # Classification dataset
+        X = np.array([
+            [1.0, 1.0, 1.5],
+            [1.5, 2.0, 1.0],
+            [2.0, 1.0, 2.0],
+            [7.0, 1.0, 7.0],
+            [7.5, 2.0, 8.0],
+            [8.0, 1.0, 7.5],
+            [4.0, 7.0, 4.0],
+            [4.5, 8.0, 5.0],
+            [5.0, 7.0, 4.5]
+        ])
+
+        Y = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+
+        kfold_class = KFold(
+            DecisionTreeClassification,
+            X,
+            Y,
+            k=3,
+            stat=classification_error
+        )
+
+        error_class = kfold_class.folds()
+        print("Decision Tree Classification Error:", error_class)
+
+        # Regression dataset
+        X_reg = np.array([
+            [1.0, 1.0, 1.0],
+            [2.0, 1.0, 2.0],
+            [1.0, 2.0, 2.0],
+            [3.0, 2.0, 1.0],
+            [2.0, 3.0, 1.0],
+            [3.0, 3.0, 2.0]
+        ])
+
+        Y_reg = np.array([4.0, 5.0, 5.0, 7.0, 9.0, 10.0])
+
+        kfold_reg = KFold(
+            DecisionTreeRegression,
+            X_reg,
+            Y_reg,
+            k=3,
+            stat=MSE
+        )
+
+        error_reg = kfold_reg.folds()
+        print("Decision Tree Regression MSE:", error_reg)
+
     test_find_selects_best_hyperparameter()
     test_find_selects_best_hyperparameter_with_hyperparameter()
     test_LOOCV()
@@ -147,3 +290,7 @@ if __name__ == "__main__":
     test_KFold()
     test_KNN()
     test_with_svm()
+    test_with_logistic_regression()
+    test_with_LDA()
+    test_with_QDA()
+    test_decisionTree()

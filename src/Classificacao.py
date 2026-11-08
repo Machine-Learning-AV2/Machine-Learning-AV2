@@ -130,10 +130,10 @@ class Logistic_Regression():
   def __init__(self, learning_rate: float = 0.01, iterations: int = 1000, intercept=True):
     """
     Inicia o modelo de Regressão Logística
-
-    learning_rate: Valor do passo na descida de gradiente. Se muito pequeno, pode demorar a convergir ou não chegar ao ótimo. Se muito alto, pode divergir.
-    iterations: Número de passos que o algoritmo da descida de gradiente executa.
-    intercept: Pode ser interpretado como um viés natural para cada classe ser mais ou menos provável. Torne False se quiser desativá-lo.
+    -----------
+      learning_rate: Valor do passo na descida de gradiente. Se muito pequeno, pode demorar a convergir ou não chegar ao ótimo. Se muito alto, pode divergir.
+      iterations: Número de passos que o algoritmo da descida de gradiente executa.
+      intercept: Pode ser interpretado como um viés natural para cada classe ser mais ou menos provável. Torne False se quiser desativá-lo.
     """
     
     self.beta = None
@@ -143,7 +143,7 @@ class Logistic_Regression():
     self.iter = iterations
     self.intercept = intercept
 
-  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+  def fit(self, X: np.ndarray, Y: np.ndarray) -> None:
     """
     Treina o modelo de Regressão Logística
 
@@ -220,7 +220,7 @@ class LDA():
     self.sigma_inv = None
     self.values = None
 
-  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+  def fit(self, X: np.ndarray, Y: np.ndarray) -> None:
     """
     Treina o modelo LDA
 
@@ -304,7 +304,7 @@ class QDA():
     self.sigmas_inv = None
     self.values = None
 
-  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+  def fit(self, X: np.ndarray, Y: np.ndarray) -> None:
     """
     Treina o modelo QDA
 
@@ -527,10 +527,10 @@ if __name__ == "__main__":
 
   # Para os testes abaixo, o LDA e o QDA foram testados separadamente nos itens em que se aplicam
   def test(X, Y, X_teste):
-    modelRL.train(X, Y)
-    modelRLNI.train(X, Y)
-    modelRLHL.train(X, Y)
-    modelRLFI.train(X, Y)
+    modelRL.fit(X, Y)
+    modelRLNI.fit(X, Y)
+    modelRLHL.fit(X, Y)
+    modelRLFI.fit(X, Y)
     modelKNN5.fit(X, Y)
     modelKNN1.fit(X, Y)
     modelKNN10.fit(X, Y)
@@ -554,8 +554,8 @@ if __name__ == "__main__":
   Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
   X_teste = np.array([[0, 0], [3, 3], [-2, 0], [-4, 6], [0, -4]])
   test(X, Y, X_teste)
-  modelLDA.train(X, Y)
-  modelQDA.train(X, Y)
+  modelLDA.fit(X, Y)
+  modelQDA.fit(X, Y)
   print("LDA: ", modelLDA.predict(X_teste))
   print("QDA: ", modelQDA.predict(X_teste))
   print()
@@ -572,7 +572,7 @@ if __name__ == "__main__":
   Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
   X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
   test(X, Y, X_teste)
-  modelLDA.train(X, Y)
+  modelLDA.fit(X, Y)
   print("LDA: ", modelLDA.predict(X_teste))
   print()
 
@@ -588,7 +588,7 @@ if __name__ == "__main__":
   Y = np.array(["A", "A", "B"])
   X_teste = np.array([[0.9, 0.9], [0.5, 0.5], [0.25, 0.25], [0.1, 0.1], [0, 0], [-0.1, -0.1], [-0.25, -0.25], [-0.5, -0.5], [-0.9, -0.9]])
   test(X, Y, X_teste)
-  modelLDA.train(X, Y)
+  modelLDA.fit(X, Y)
   print("LDA: ", modelLDA.predict(X_teste))
   print()
 
@@ -597,7 +597,7 @@ if __name__ == "__main__":
   Y = np.array(["Equal", "Identical", "Equal", "Identical", "Equal", "Identical"])
   X_teste = np.array([[5, -3], [0, 0]])
   test(X, Y, X_teste)
-  modelLDA.train(X, Y)
+  modelLDA.fit(X, Y)
   print("LDA: ", modelLDA.predict(X_teste))
   print()
 
