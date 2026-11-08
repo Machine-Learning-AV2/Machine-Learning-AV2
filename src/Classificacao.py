@@ -42,7 +42,7 @@ class KNN():
   O modelo de K nearest neighbors, para um K escolhido
   """
 
-  def __init__(self, K: int = 5, p=2, normalize=False):
+  def __init__(self, K: int, p=2, normalize=False):
     """
     Inicia o modelo KNN
       --------------
@@ -68,7 +68,7 @@ class KNN():
   def distance(self, P1: np.ndarray, P2: np.ndarray) -> float:
     return dist(P1, P2, self.p)
 
-  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+  def fit(self, X: np.ndarray, Y: np.ndarray) -> None:
     """
     Treina o modelo KNN
     -----------
@@ -387,7 +387,7 @@ class SVM():
   O modelo de Support Vector Machine linear com margem flexível, treinado por descida do subgradiente no primal.
   Com mais de duas classes, usa a estratégia um-contra-um (one-vs-one).
   """
-  def __init__(self, C: float = 1.0, learning_rate: float = 0.01, max_iterations: int = 1000):
+  def __init__(self, C: float, learning_rate: float = 0.01, max_iterations: int = 1000):
     """
     Inicia o modelo SVM
 
@@ -433,7 +433,7 @@ class SVM():
 
     return w, b
 
-  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+  def fit(self, X: np.ndarray, Y: np.ndarray) -> None:
     """
     Treina o modelo SVM
 
@@ -489,123 +489,125 @@ class SVM():
       votes[np.arange(len(L)), winners] += 1 #arange cria um vetor com indices de L
 
     return self.values[np.argmax(votes, axis=1)]
-# -----TESTES-----
-print("Sigmoide(0) = ", sigmoid(0))
-print("Sigmoide(1) = ", sigmoid(1))
-print("Sigmoide(-1) = ", sigmoid(-1))
 
-n = np.array([1, 1, 1])
-print("Softmax(1, 1, 1) = ", softmax(n))
-n = np.array([2, 1, 1])
-print("Softmax(2, 1, 1) = ", softmax(n))
-n = np.array([1, 2, 2])
-print("Softmax(1, 2, 2) = ", softmax(n))
-n = np.array([1, 3, 1])
-print("Softmax(1, 3, 1) = ", softmax(n))
-n = np.array([1.5, 1, 0, -1, -1.5])
-print("Softmax(1.5, 1, 0, -1, -1.5) = ", softmax(n))
-n = np.array([5])
-print("Softmax(5) = ", softmax(n))
-n = np.array([1, 1.01])
-print("Softmax(1, 1.01) = ", softmax(n))
-print()
+if __name__ == "__main__":
+  # -----TESTES-----
+  print("Sigmoide(0) = ", sigmoid(0))
+  print("Sigmoide(1) = ", sigmoid(1))
+  print("Sigmoide(-1) = ", sigmoid(-1))
 
-modelRL = Logistic_Regression()
-modelRLNI = Logistic_Regression(intercept = False)
-modelRLHL = Logistic_Regression(learning_rate = 1)
-modelRLFI = Logistic_Regression(iterations = 2)
-modelKNN5 = KNN()
-modelKNN1 = KNN(K=1)
-modelKNN10 = KNN(K=10)
-modelLDA = LDA()
-modelQDA = QDA()
-modelSVM = SVM()
-modelSVMHC = SVM(C=10)
-modelSVMFI = SVM(max_iterations=2)
+  n = np.array([1, 1, 1])
+  print("Softmax(1, 1, 1) = ", softmax(n))
+  n = np.array([2, 1, 1])
+  print("Softmax(2, 1, 1) = ", softmax(n))
+  n = np.array([1, 2, 2])
+  print("Softmax(1, 2, 2) = ", softmax(n))
+  n = np.array([1, 3, 1])
+  print("Softmax(1, 3, 1) = ", softmax(n))
+  n = np.array([1.5, 1, 0, -1, -1.5])
+  print("Softmax(1.5, 1, 0, -1, -1.5) = ", softmax(n))
+  n = np.array([5])
+  print("Softmax(5) = ", softmax(n))
+  n = np.array([1, 1.01])
+  print("Softmax(1, 1.01) = ", softmax(n))
+  print()
 
-# Para os testes abaixo, o LDA e o QDA foram testados separadamente nos itens em que se aplicam
-def test(X, Y, X_teste):
-  modelRL.train(X, Y)
-  modelRLNI.train(X, Y)
-  modelRLHL.train(X, Y)
-  modelRLFI.train(X, Y)
-  modelKNN5.train(X, Y)
-  modelKNN1.train(X, Y)
-  modelKNN10.train(X, Y)
-  modelSVM.train(X, Y)
-  modelSVMHC.train(X, Y)
-  modelSVMFI.train(X, Y)
+  modelRL = Logistic_Regression()
+  modelRLNI = Logistic_Regression(intercept = False)
+  modelRLHL = Logistic_Regression(learning_rate = 1)
+  modelRLFI = Logistic_Regression(iterations = 2)
+  modelKNN5 = KNN(5)
+  modelKNN1 = KNN(1)
+  modelKNN10 = KNN(10)
+  modelLDA = LDA()
+  modelQDA = QDA()
+  modelSVM = SVM(1)
+  modelSVMHC = SVM(10)
+  modelSVMFI = SVM(1, max_iterations=2)
 
-  print("Regressão Logística: ", modelRL.predict(X_teste))
-  print("Regressão Logística sem intercepto: ", modelRLNI.predict(X_teste))
-  print("Regressão Logística com alto learning rate: ", modelRLHL.predict(X_teste))
-  print("Regressão Logística com poucas iterações: ", modelRLFI.predict(X_teste))
-  print("KNN com K=5: ", modelKNN5.predict(X_teste))
-  print("KNN com K=1: ", modelKNN1.predict(X_teste))
-  print("KNN com K=10: ", modelKNN10.predict(X_teste))
-  print("SVM: ", modelSVM.predict(X_teste))
-  print("SVM com C=10: ", modelSVMHC.predict(X_teste))
-  print("SVM com poucas iterações: ", modelSVMFI.predict(X_teste))
+  # Para os testes abaixo, o LDA e o QDA foram testados separadamente nos itens em que se aplicam
+  def test(X, Y, X_teste):
+    modelRL.train(X, Y)
+    modelRLNI.train(X, Y)
+    modelRLHL.train(X, Y)
+    modelRLFI.train(X, Y)
+    modelKNN5.fit(X, Y)
+    modelKNN1.fit(X, Y)
+    modelKNN10.fit(X, Y)
+    modelSVM.fit(X, Y)
+    modelSVMHC.fit(X, Y)
+    modelSVMFI.fit(X, Y)
 
-# Vários pontos
-X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
-Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
-X_teste = np.array([[0, 0], [3, 3], [-2, 0], [-4, 6], [0, -4]])
-test(X, Y, X_teste)
-modelLDA.train(X, Y)
-modelQDA.train(X, Y)
-print("LDA: ", modelLDA.predict(X_teste))
-print("QDA: ", modelQDA.predict(X_teste))
-print()
+    print("Regressão Logística: ", modelRL.predict(X_teste))
+    print("Regressão Logística sem intercepto: ", modelRLNI.predict(X_teste))
+    print("Regressão Logística com alto learning rate: ", modelRLHL.predict(X_teste))
+    print("Regressão Logística com poucas iterações: ", modelRLFI.predict(X_teste))
+    print("KNN com K=5: ", modelKNN5.predict(X_teste))
+    print("KNN com K=1: ", modelKNN1.predict(X_teste))
+    print("KNN com K=10: ", modelKNN10.predict(X_teste))
+    print("SVM: ", modelSVM.predict(X_teste))
+    print("SVM com C=10: ", modelSVMHC.predict(X_teste))
+    print("SVM com poucas iterações: ", modelSVMFI.predict(X_teste))
 
-# Pontos em uma linha reta
-X = np.array([[1, 2], [0.6, 2], [1, 2], [0.7, 2], [-10, 2], [0, 2]])
-Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
-X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
-test(X, Y, X_teste)
-print()
+  # Vários pontos
+  X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
+  Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
+  X_teste = np.array([[0, 0], [3, 3], [-2, 0], [-4, 6], [0, -4]])
+  test(X, Y, X_teste)
+  modelLDA.train(X, Y)
+  modelQDA.train(X, Y)
+  print("LDA: ", modelLDA.predict(X_teste))
+  print("QDA: ", modelQDA.predict(X_teste))
+  print()
 
-# Pontos em uma linha quase reta
-X = np.array([[1, 2], [0.6, 2.1], [1, 2.1], [0.7, 2], [-10, 1.9], [0, 2.2]])
-Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
-X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
-test(X, Y, X_teste)
-modelLDA.train(X, Y)
-print("LDA: ", modelLDA.predict(X_teste))
-print()
+  # Pontos em uma linha reta
+  X = np.array([[1, 2], [0.6, 2], [1, 2], [0.7, 2], [-10, 2], [0, 2]])
+  Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
+  X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
+  test(X, Y, X_teste)
+  print()
 
-# Um único ponto
-X = np.array([[8, -7]])
-Y = np.array(["Only"])
-X_teste = np.array([[0, 0], [1, 1], [2, 2], [3, 3]])
-test(X, Y, X_teste)
-print()
+  # Pontos em uma linha quase reta
+  X = np.array([[1, 2], [0.6, 2.1], [1, 2.1], [0.7, 2], [-10, 1.9], [0, 2.2]])
+  Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
+  X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
+  test(X, Y, X_teste)
+  modelLDA.train(X, Y)
+  print("LDA: ", modelLDA.predict(X_teste))
+  print()
 
-# Prevendo mudança em uma reta
-X = np.array([[-1.51, -1.49], [-1, -1], [1, 1]])
-Y = np.array(["A", "A", "B"])
-X_teste = np.array([[0.9, 0.9], [0.5, 0.5], [0.25, 0.25], [0.1, 0.1], [0, 0], [-0.1, -0.1], [-0.25, -0.25], [-0.5, -0.5], [-0.9, -0.9]])
-test(X, Y, X_teste)
-modelLDA.train(X, Y)
-print("LDA: ", modelLDA.predict(X_teste))
-print()
+  # Um único ponto
+  X = np.array([[8, -7]])
+  Y = np.array(["Only"])
+  X_teste = np.array([[0, 0], [1, 1], [2, 2], [3, 3]])
+  test(X, Y, X_teste)
+  print()
 
-# Pontos iguais em classes diferentes
-X = np.array([[0, 0], [0, 0], [1, 2], [1, 2], [-1, -1], [-1, -1]])
-Y = np.array(["Equal", "Identical", "Equal", "Identical", "Equal", "Identical"])
-X_teste = np.array([[5, -3], [0, 0]])
-test(X, Y, X_teste)
-modelLDA.train(X, Y)
-print("LDA: ", modelLDA.predict(X_teste))
-print()
+  # Prevendo mudança em uma reta
+  X = np.array([[-1.51, -1.49], [-1, -1], [1, 1]])
+  Y = np.array(["A", "A", "B"])
+  X_teste = np.array([[0.9, 0.9], [0.5, 0.5], [0.25, 0.25], [0.1, 0.1], [0, 0], [-0.1, -0.1], [-0.25, -0.25], [-0.5, -0.5], [-0.9, -0.9]])
+  test(X, Y, X_teste)
+  modelLDA.train(X, Y)
+  print("LDA: ", modelLDA.predict(X_teste))
+  print()
 
-# Teste métrica KNN
-modelKNN2 = KNN(2)
-modelKNN2sigma = KNN(2, normalize=True)
-X = np.array([[10, 10], [11, 11], [8, 9], [0, 0], [1, -1], [-1000, 1]])
-Y = np.array(["Direito", "Direito", "Direito", "Esquerdo", "Esquerdo", "Esquerdo"])
-X_teste = np.array([[11, 1]])
-modelKNN2.train(X, Y)
-modelKNN2sigma.train(X, Y)
-print(modelKNN2.predict(X_teste))
-print(modelKNN2sigma.predict(X_teste))
+  # Pontos iguais em classes diferentes
+  X = np.array([[0, 0], [0, 0], [1, 2], [1, 2], [-1, -1], [-1, -1]])
+  Y = np.array(["Equal", "Identical", "Equal", "Identical", "Equal", "Identical"])
+  X_teste = np.array([[5, -3], [0, 0]])
+  test(X, Y, X_teste)
+  modelLDA.train(X, Y)
+  print("LDA: ", modelLDA.predict(X_teste))
+  print()
+
+  # Teste métrica KNN
+  modelKNN2 = KNN(2)
+  modelKNN2sigma = KNN(2, normalize=True)
+  X = np.array([[10, 10], [11, 11], [8, 9], [0, 0], [1, -1], [-1000, 1]])
+  Y = np.array(["Direito", "Direito", "Direito", "Esquerdo", "Esquerdo", "Esquerdo"])
+  X_teste = np.array([[11, 1]])
+  modelKNN2.fit(X, Y)
+  modelKNN2sigma.fit(X, Y)
+  print(modelKNN2.predict(X_teste))
+  print(modelKNN2sigma.predict(X_teste))

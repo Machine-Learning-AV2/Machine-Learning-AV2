@@ -1,4 +1,5 @@
 import numpy as np
+from Classificacao import KNN
 from metricas import MSE
 
 class KFold:
@@ -7,7 +8,8 @@ class KFold:
             X : np.ndarray,
             Y : np.ndarray,
             k: int = 5,
-            hip = None
+            hip = None,
+            stat = MSE
         ):
         """Inicialização do método Kfold
         Parâmetros
@@ -22,6 +24,7 @@ class KFold:
         self.Y = Y
         self.k = k
         self.hip = hip
+        self.stat = stat
         temp = self.model(hip) if self.hip is not None else self.model()
         if hasattr(temp, "fit") == False:
             raise AttributeError("O modelo não contém a função 'fit' necessária")
@@ -45,7 +48,7 @@ class KFold:
             modelo_i.fit(X_train,Y_train)
 
             Y_hat_i = modelo_i.predict(X_teste)     #ŷ_i de cada fold
-            mse_i = MSE(Y_hat_i,Y_teste)
+            mse_i = self.stat(Y_hat_i,Y_teste)
             lista.append(mse_i)
 
         return np.mean(lista)
@@ -118,7 +121,6 @@ class Bootstrap:
         self.n = n
         self.arr = None
         self.hip = hip
-        print(hip)
         if hasattr(self.model(hip), "fit") == False:
             raise AttributeError("O modelo não contém a função 'fit' necessária")
         elif hasattr(self.model(hip),"predict") == False:
@@ -317,7 +319,7 @@ if __name__ == "__main__":
         std_dev = bootstrap.std_dev()
         conf_int = bootstrap.conf_int(alpha=0.05)
 
-        print(mean, std_dev, conf_int)
+        #print(mean, std_dev, conf_int)
 
         assert len(arr) == 100, "O array de estatísticas deveria ter tamanho 100"
         assert abs(mean) <= 10**9, "A média deveria ser 0 para o modelo constante"
@@ -337,8 +339,42 @@ if __name__ == "__main__":
 
         print("KFold OK")
 
+    def test_KNN():
+        from Classificacao import KNN
+        from metricas import classification_error
+        # Criar um conjunto de dados de classificação
+        X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
+        Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
+
+
+        # Inicializar o modelo KNN
+        knn_model = KNN
+        # Aplicar KFold com o modelo KNN
+        kfold = KFold(knn_model, X, Y, hip=3, stat=classification_error)
+        mse = kfold.folds()
+
+        print(f"KFold MSE para KNN: {mse}")
+
+
+    def test_with_svm():
+        from Classificacao import SVM
+        from metricas import classification_error
+        # Criar um conjunto de dados de classificação
+        X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
+        Y = np.array(["Red", "Red", "Blue", "Blue", "Green", "Blue", "Blue", "Red", "Red", "Red", "Red", "Green", "Green"])
+
+        # Inicializar o modelo SVM
+        svm_model = SVM
+        # Aplicar KFold com o modelo SVM
+        kfold = KFold(svm_model, X, Y, hip=1, stat=classification_error)
+        mse = kfold.folds()
+
+        print(f"KFold MSE para SVM: {mse}")
+
     test_find_selects_best_hyperparameter()
     test_find_selects_best_hyperparameter_with_hyperparameter()
     test_LOOCV()
     test_bootstrap()
     test_KFold()
+    test_KNN()
+    test_with_svm()
