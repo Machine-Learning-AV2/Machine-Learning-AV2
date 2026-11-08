@@ -133,9 +133,6 @@ class Lasso(Regressao):
 
 
 class RegressaoPolinomial(Regressao):
-<<<<<<< HEAD
-    def __init__(self, grau: float):
-=======
     """
     Regressão polinomial de uma variável explicativa.
 
@@ -145,7 +142,6 @@ class RegressaoPolinomial(Regressao):
     """
 
     def __init__(self, grau=2):
->>>>>>> 2e0fee3 (Pequenas alteracoes na regressao e adicao de testes regressao)
         super().__init__()
 
         if not isinstance(grau, int) or isinstance(grau, bool) or grau < 1:
@@ -216,9 +212,6 @@ class MinimosQuadrados(Regressao):
 
 
 class Ridge(Regressao):
-<<<<<<< HEAD
-    def __init__(self, alpha: int):
-=======
     """
     Regressão Ridge.
 
@@ -240,7 +233,6 @@ class Ridge(Regressao):
     """
 
     def __init__(self, alpha=1.0):
->>>>>>> 2e0fee3 (Pequenas alteracoes na regressao e adicao de testes regressao)
         super().__init__()
 
         if not np.isfinite(alpha) or alpha < 0:
