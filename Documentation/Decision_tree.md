@@ -689,24 +689,23 @@ Diminuir esse parâmetro restringe o crescimento da árvore e pode reduzir sua c
 
 Aumentá-lo permite regras de decisão mais detalhadas, mas pode favorecer o ajuste excessivo aos dados de treinamento.
 
-7.2. min_samples
+## 7.2. `min_samples`
 
 Controla a quantidade mínima de observações necessária para que o algoritmo tente dividir um nó.
 
-A condição implementada é:
+A condição implementada no código é:
 
 $$
-n_{\text{nó}} < \text{min_samples}.
+n_{\text{nó}} < \text{min\_samples}
 $$
 
 Portanto, uma divisão ainda pode ser tentada quando:
 
 $$
-n_{\text{nó}} = \text{min_samples}.
+n_{\text{nó}} = \text{min\_samples}
 $$
 
-Importante: esse parâmetro não impõe uma quantidade mínima de observações em cada folha. O código não verifica o tamanho dos filhos antes de aceitar uma divisão. Assim, uma folha pode terminar contendo apenas uma observação.
-
+**Importante:** esse parâmetro não impõe uma quantidade mínima de observações em cada folha. O código não verifica o tamanho dos filhos antes de aceitar uma divisão. Assim, uma folha pode terminar contendo apenas uma observação.
 
 8. Exemplos de utilização
 
