@@ -1,13 +1,12 @@
 import numpy as np
-from Functions import functions, functions_name
-from metricas import MSE
-# from metricas import MSE, DMSE
+from . import Functions
+from . import metricas
 from typing import Callable
 
 
 class NeuralNetwork:
-    def __init__(self, layers: list[int], activate_function: functions_name | list[functions_name], 
-                 output_activation: functions_name = 'identity', function_dictionary: dict[str, tuple[Callable, Callable]] = functions,  
+    def __init__(self, layers: list[int], activate_function: Functions.functions_name | list[Functions.functions_name], 
+                 output_activation: Functions.functions_name = 'identity', function_dictionary: dict[str, tuple[Callable, Callable]] = Functions.functions,  
                  bias_interval: tuple[float, float] = (0, 1), weight_interval: tuple[float, float] = (0, 1), 
                  seed:int = 782) -> None:
         """
@@ -36,7 +35,7 @@ class NeuralNetwork:
 
         if isinstance(activate_function, list):
             if len(activate_function) != len(layers)-2:
-                raise KeyError("ERROR: Quantidade de funções diferente dos layers ocultos")
+                raise ValueError("ERROR: Quantidade de funções diferente dos layers ocultos")
             self.activate_functions: list[str] = activate_function.copy()
         elif isinstance(activate_function, str):
             self.activate_functions: list[str] = [activate_function] * (len(layers) - 2)
@@ -60,7 +59,7 @@ class NeuralNetwork:
         """
         for function_name in activate_functions:
             if function_name not in function_dictionary:
-                raise ValueError(f"ERROR: Função de ativação inválida: {function_name}")
+                raise KeyError(f"ERROR: Função de ativação inválida: {function_name}")
 
     @staticmethod
     def _check_input(x: np.ndarray) -> np.ndarray:
@@ -129,7 +128,7 @@ class NeuralNetwork:
         
         return array
 
-    def train(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = lambda y, y_pred: 2*(y_pred - y)/ y.shape[1], learn_rate: float = 0.1, 
+    def train(self, X: np.ndarray, y: np.ndarray, loss: Callable = metricas.MSE, loss_diff: Callable = metricas.DMSE, learn_rate: float = 0.1, 
               batch: int = 10, epochs: int = 1000, tol = 1e-9) -> None:
         """
             Treina a rede neural a partir dos dados X, y
