@@ -1,6 +1,6 @@
 import numpy as np
 from . import Functions
-from . import metricas
+from .metricas import MSE, DMSE 
 from typing import Callable
 
 
@@ -128,7 +128,7 @@ class NeuralNetwork:
         
         return array
 
-    def fit(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = lambda y, y_pred: 2*(y_pred - y)/ y.shape[1], learn_rate: float = 0.1, 
+    def fit(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = DMSE, learn_rate: float = 0.1, 
               batch: int = 10, epochs: int = 1000, tol = 1e-9) -> None:
         """
             Treina a rede neural a partir dos dados X, y
