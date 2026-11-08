@@ -1,5 +1,5 @@
 import numpy as np
-from metricas import dist
+from .metricas import dist
 
 # Verifica se os dados de input para treino possuem algum erro
 def train_check(X: np.ndarray, Y: np.ndarray) -> None:
