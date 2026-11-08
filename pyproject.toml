@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "machinelearning-mnpkllps"
+version = "0.1.5"
+authors = [
+  { name = "Marce Alves da Silva", email = "al.marce.silva@impatech.edu.br" },
+  { name = "Pedro Paulo Gomes Paiva", email = "al.pedro.gomes@impatech.edu.br" },
+  { name = "Lucas da Silva Oliveira", email = "al.lucas.oliveira@impatech.edu.br" },
+  { name = "Samuel Leite", email = "al.samuel.leite@impatech.edu.br" },
+  { name = "Kenzo Nagamine", email = "al.kenzo.nagamine@impatech.edu.br" },
+  { name = "Lucas Caracas", email = "al.lucas.carlos@impatech.edu.br" },
+  { name = "Natan Gabriel Spohr", email = "al.natan.spohr@impatech.edu.br" },
+  { name = "Pedro Pereira Carvalho", email = "al.pedro.carvalho@impatech.edu.br"},
+]
+description = "Biblioteca para Machine Learning, métodos supervisionados e não supervisionados"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=2.0.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Machine-Learning-AV2/Machine-Learning-AV2"
+"Bug Tracker" = "https://github.com/Machine-Learning-AV2/Machine-Learning-AV2/issues/"
+
+# Configuração correta para mapear a pasta src diretamente como o módulo principal
+[tool.setuptools]
+packages = ["machinelearning_mnpkllps"]
+
+[tool.setuptools.package-dir]
+machinelearning_mnpkllps = "src"

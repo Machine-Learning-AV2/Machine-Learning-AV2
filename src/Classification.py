@@ -490,8 +490,9 @@ class SVM():
 
     return self.values[np.argmax(votes, axis=1)]
 
-if __name__ == "__main__":
-  # -----TESTES-----
+
+# -----TESTES-----
+if __name__ == '__main__':
   print("Sigmoide(0) = ", sigmoid(0))
   print("Sigmoide(1) = ", sigmoid(1))
   print("Sigmoide(-1) = ", sigmoid(-1))
@@ -548,6 +549,16 @@ if __name__ == "__main__":
     print("SVM: ", modelSVM.predict(X_teste))
     print("SVM com C=10: ", modelSVMHC.predict(X_teste))
     print("SVM com poucas iterações: ", modelSVMFI.predict(X_teste))
+    print("Regressão Logística: ", modelRL.predict(X_teste))
+    print("Regressão Logística sem intercepto: ", modelRLNI.predict(X_teste))
+    print("Regressão Logística com alto learning rate: ", modelRLHL.predict(X_teste))
+    print("Regressão Logística com poucas iterações: ", modelRLFI.predict(X_teste))
+    print("KNN com K=5: ", modelKNN5.predict(X_teste))
+    print("KNN com K=1: ", modelKNN1.predict(X_teste))
+    print("KNN com K=10: ", modelKNN10.predict(X_teste))
+    print("SVM: ", modelSVM.predict(X_teste))
+    print("SVM com C=10: ", modelSVMHC.predict(X_teste))
+    print("SVM com poucas iterações: ", modelSVMFI.predict(X_teste))
 
   # Vários pontos
   X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
@@ -566,6 +577,12 @@ if __name__ == "__main__":
   X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
   test(X, Y, X_teste)
   print()
+  # Pontos em uma linha reta
+  X = np.array([[1, 2], [0.6, 2], [1, 2], [0.7, 2], [-10, 2], [0, 2]])
+  Y = np.array(["ONE", "TWO", "ONE", "TWO", "THREE", "THREE"])
+  X_teste = np.array([[0.5, 1.9], [1.1, 2.7], [0, 2.1], [-1, 2.3], [0.3, 1.6]])
+  test(X, Y, X_teste)
+  print()
 
   # Pontos em uma linha quase reta
   X = np.array([[1, 2], [0.6, 2.1], [1, 2.1], [0.7, 2], [-10, 1.9], [0, 2.2]])
@@ -576,6 +593,12 @@ if __name__ == "__main__":
   print("LDA: ", modelLDA.predict(X_teste))
   print()
 
+  # Um único ponto
+  X = np.array([[8, -7]])
+  Y = np.array(["Only"])
+  X_teste = np.array([[0, 0], [1, 1], [2, 2], [3, 3]])
+  test(X, Y, X_teste)
+  print()
   # Um único ponto
   X = np.array([[8, -7]])
   Y = np.array(["Only"])

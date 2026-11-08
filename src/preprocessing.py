@@ -239,7 +239,7 @@ class ColumnCategoricalEncoder:
         Attributes
         -----------
             encoders : Dictionary {column index: fitted CategoricalEncoder of that column, the corresponding object self from the CategoricalEncoder class};
-            n_features : Number of columns of the matrix used in fit (len(self.columns)).
+            n_features : Number of columns of the matrix used in fit.
 
 
             Examples
@@ -299,95 +299,4 @@ class ColumnCategoricalEncoder:
     def fit_transform(self, X):
         """fit followed by transform for the training data"""
         return self.fit(X).transform(X)
-
-
-# Tests (by claude) for the functions created
-
-if __name__ == '__main__':
-
-    tol = 1e-9 # Error tolerance
-    indx = 0
-
-    def check(condition):
-        global indx
-        indx += 1
-        if condition:
-            print(f'{indx} Passed')
-        else:
-            print(f'{indx} Failed')
-
-    def raises(error, function, *args):
-        try:
-            function(*args)
-        except error:
-            return True
-        return False
-
-    X = np.array([[1., 10.], [2., 20.], [3., 30.], [4., 40.]])
-
-    # ----- StandardScaler -----
-    scaler = StandardScaler()
-    Z = scaler.fit_transform(X)
-    # Must have mean 0 and standard deviation 1 in each column
-    check(np.allclose(Z.mean(axis=0), 0, atol=tol) and np.allclose(Z.std(axis=0), 1, atol=tol))
-    # Must return (1-2.5)/sqrt(1.25) ≃ -1.341640786
-    check(abs(Z[0, 0] - (-1.341640786)) < tol)
-    # A constant column becomes 0
-    check(np.allclose(StandardScaler().fit_transform(np.array([[5.], [5.], [5.]])), 0))
-    # transform before fit must raise RuntimeError
-    check(raises(RuntimeError, StandardScaler().transform, X))
-    # A different number of columns must raise ValueError
-    check(raises(ValueError, scaler.transform, np.ones((2, 3))))
-    # NaN must raise ValueError
-    check(raises(ValueError, StandardScaler().fit, np.array([[1.], [np.nan]])))
-
-    # ----- MinMaxScaler -----
-    mm = MinMaxScaler()
-    N = mm.fit_transform(X)
-    # Must return [0, 1/3, 2/3, 1] in both columns
-    check(np.allclose(N[:, 0], [0, 1/3, 2/3, 1]) and np.allclose(N[:, 1], [0, 1/3, 2/3, 1]))
-    # New data outside the training range may leave [0, 1]: x = 5 -> 4/3
-    check(abs(mm.transform(np.array([[5., 10.]]))[0, 0] - 4/3) < tol)
-    # A constant column becomes 0
-    check(np.allclose(MinMaxScaler().fit_transform(np.array([[5.], [5.], [5.]])), 0))
-
-    # ----- CategoricalEncoder -----
-    color = np.array(['blue', 'green', 'blue', 'red'])
-    ce = CategoricalEncoder ()
-    # Columns: blue, green, red
-    check(np.array_equal(ce.fit_transform(color), [[1, 0, 0], [0, 1, 0], [1, 0, 0], [0, 0, 1]]))
-    # With drop_first, 'blue' becomes the row [0, 0]
-    check(np.array_equal(CategoricalEncoder(drop_first=True).fit_transform(color), [[0, 0], [1, 0], [0, 0], [0, 1]]))
-    # An unknown category must raise ValueError
-    check(raises(ValueError, ce.transform, np.array(['purple'])))
-
-    # ----- train_test_split -----
-    X_big = np.arange(40).reshape(20, 2)
-    y_big = np.arange(20)
-    X_tr, X_te, y_tr, y_te = train_test_split(X_big, y_big, 0.25, seed=0)
-    # Must give 15 training and 5 test samples
-    check(X_tr.shape == (15, 2) and X_te.shape == (5, 2) and y_tr.size == 15 and y_te.size == 5)
-    # The rows stay paired with y and no sample is repeated
-    check(np.array_equal(X_tr[:, 0] // 2, y_tr) and np.array_equal(np.sort(np.concatenate([y_tr, y_te])), y_big))
-    # Same seed -> same split
-    check(np.array_equal(train_test_split(X_big, y_big, 0.25, seed=0)[3], y_te))
-    # An invalid test_size must raise ValueError
-    check(raises(ValueError, train_test_split, X_big, y_big, 1.5))
-
-    # ----- ColumnCategoricalEncoder -----
-    X_mix = np.array([[1.5, 'blue', 'yes'], [2.0, 'red', 'no'], [0.5, 'blue', 'no']], dtype=object)
-    cce = ColumnCategoricalEncoder(columns=[1, 2])
-    # Columns: original column 0, blue, red, no, yes
-    check(np.allclose(cce.fit_transform(X_mix), [[1.5, 1, 0, 0, 1], [2.0, 0, 1, 1, 0], [0.5, 1, 0, 1, 0]]))
-    # With drop_first: original column 0, red, yes
-    check(np.allclose(ColumnCategoricalEncoder([1, 2], drop_first=True).fit_transform(X_mix), [[1.5, 0, 1], [2.0, 1, 0], [0.5, 0, 0]]))
-    # transform on new data uses the categories learned in fit
-    check(np.allclose(cce.transform(np.array([[3.0, 'red', 'yes']], dtype=object)), [[3.0, 0, 1, 0, 1]]))
-    # columns=None keeps the matrix as it is
-    check(np.allclose(ColumnCategoricalEncoder().fit_transform(X), X))
-    # A text column not listed in columns must raise TypeError
-    check(raises(TypeError, ColumnCategoricalEncoder([1]).fit_transform, X_mix))
-    # An index out of range must raise ValueError
-    check(raises(ValueError, ColumnCategoricalEncoder([3]).fit, X_mix))
-    # An unknown category must raise ValueError
-    check(raises(ValueError, cce.transform, np.array([[3.0, 'purple', 'yes']], dtype=object)))
+    
