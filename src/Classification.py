@@ -1,5 +1,6 @@
 import numpy as np
 from .metricas import dist
+from .Functions import sigmoid, softmax
 
 # Verifica se os dados de input para treino possuem algum erro
 def train_check(X: np.ndarray, Y: np.ndarray) -> None:
@@ -27,15 +28,6 @@ def predict_element_check(P: np.ndarray, n_features: int) -> None:
       raise ValueError("Test and train must contain same number of features")
   if not np.issubdtype(P.dtype, np.number):
       raise TypeError("Input must contain numerical values")
-
-# Converte um valor real em um valor no intervalo (0, 1)
-def sigmoid(z: float) -> float:
-  return 1/(1+np.exp(-z))
-
-# Versão do sigmoide para mais variáveis (scores). A soma total de probabilities deve ser 1.
-def softmax(scores: np.ndarray) -> np.ndarray:
-  exp_scores = np.exp(scores)
-  return exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
   
 class KNN():
   """
