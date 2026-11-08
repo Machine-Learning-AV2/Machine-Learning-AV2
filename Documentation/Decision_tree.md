@@ -9,7 +9,6 @@ O projeto implementa dois modelos:
 
 Ambos os modelos utilizam divisões binárias e construção recursiva da árvore.
 
-⸻
 
 1. Dependências
 
@@ -26,7 +25,6 @@ Importação:
 
 import numpy as np
 
-⸻
 
 2. Fundamentos matemáticos
 
@@ -97,7 +95,7 @@ $$
 
 Essa estratégia considera todas as divisões distintas induzidas pela ordenação dos valores observados de uma característica numérica.
 
-⸻
+
 
 3. Árvore de decisão para classificação
 
@@ -709,7 +707,6 @@ $$
 
 Importante: esse parâmetro não impõe uma quantidade mínima de observações em cada folha. O código não verifica o tamanho dos filhos antes de aceitar uma divisão. Assim, uma folha pode terminar contendo apenas uma observação.
 
-⸻
 
 8. Exemplos de utilização
 
@@ -796,7 +793,6 @@ $$
 
 Esse indicador representa o erro absoluto médio das previsões e é expresso na mesma unidade da variável resposta.
 
-⸻
 
 9. Limitações da implementação
 
@@ -883,7 +879,6 @@ O código não implementa:
 
 Cada divisão é determinada de maneira determinística a partir dos dados e dos parâmetros, ressalvadas situações em que existam empates entre candidatos.
 
-⸻
 
 10. Complexidade computacional
 
@@ -919,7 +914,6 @@ $$
 
 Essas estimativas são referentes à estratégia de busca implementada e não devem ser confundidas com a complexidade de versões otimizadas de árvores de decisão.
 
-⸻
 
 11. Diferenças em relação a bibliotecas convencionais
 
@@ -942,7 +936,6 @@ Além disso, a implementação não disponibiliza diretamente:
 
 Essas funcionalidades não fazem parte do código apresentado.
 
-⸻
 
 12. Referência rápida da API
 
@@ -968,7 +961,6 @@ adjust(X, y)	Treina o modelo.	self.
 _predict_sample(x, no)	Prevê o valor de uma observação.	Número real.
 predict(X)	Prevê os valores de várias observações.	Array NumPy.
 
-⸻
 
 13. Execução do módulo
 
@@ -989,7 +981,6 @@ from decision_tree import (
 
 A partir daí, as classes podem ser instanciadas e utilizadas normalmente.
 
-⸻
 
 14. Conclusão
 
