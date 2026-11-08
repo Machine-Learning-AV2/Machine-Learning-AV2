@@ -1,6 +1,7 @@
 # Testes de sanidade para classificação
 
-from src import Classification
+from src.Classification import *
+from src.Functions import *
 tol = 10**(-9)
 
 # Sigmoides

@@ -174,7 +174,7 @@ class NeuralNetwork:
             else:
                 loss = loss_aux
 
-    def _backpropagation(self, x: np.ndarray, y: np.ndarray, loss_function: str = 'MSE', learn_rate: float = 0.1) -> None:
+    def _backpropagation(self, x: np.ndarray, y: np.ndarray, learn_rate: float = 0.1) -> None:
         """
             Calcula as decidas de gradiente para cada peso e viés.
             
@@ -182,7 +182,6 @@ class NeuralNetwork:
             -----------
             x np.ndarray : Matriz P x N dos dados de treino;
             y np.ndarray : Matriz S x N das saidas de treino;
-            loss_function str : Função perda utilizada para calcular o gradiente;
             learn_rate float : Taxa de aprendizado (0.1 por padrão);
         """
 
@@ -191,7 +190,7 @@ class NeuralNetwork:
         cost: list[np.ndarray] = [np.array([]) for _ in range(1, len(self.layers))]
 
         activate_function = self.activate_functions[-1]
-        cost[-1] = self.loss_diff(y, self._state_layers[-1]) * self._function_dictionary[activate_function][1](self._state_linear[-1])
+        cost[-1] = self.loss_diff(y.flatten(), self._state_layers[-1].flatten()) * self._function_dictionary[activate_function][1](self._state_linear[-1])
 
         for level in range(len(self.layers)-3, -1, -1):
             activate_function = self.activate_functions[level]
