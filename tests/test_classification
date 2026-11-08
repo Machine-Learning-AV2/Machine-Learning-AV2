@@ -76,3 +76,21 @@ assert np.all(modelK.predict(X_test) == y_test)
 assert np.all(modelL.predict(X_test) == y_test)
 assert np.all(modelQ.predict(X_test) == y_test)
 assert np.all(modelS.predict(X_test) == y_test)
+
+X = np.array([
+    [0.0, 0.0],
+    [0.0, 2.0],
+    [2.0, 0.0],
+    [1.0, 1.0],])
+y = np.array([0, 0, 0, 1])
+
+modelK1 = KNN(K=1)
+modelK3 = KNN(K=3)
+modelK1.train(X, y)
+modelK3.train(X, y)
+
+X_test = np.array([[1.0, 0.9]])
+
+a = modelK1.predict(X_test)
+b = modelK3.predict(X_test)
+assert a[0] != b[0]
