@@ -159,7 +159,7 @@ if __name__ == "__main__":
     # dois grupos bem separados: um perto de (0,0) e outro perto de (10,10)
     X = np.vstack([rng.normal(0, 0.5, (50, 2)), rng.normal(10, 0.5, (50, 2))])
 
-    modelo = KMeans(k=2).fit(X)
+    modelo = KMeans(2).fit(X)
     rotulos = modelo.predict(X)
 
     assert len(set(rotulos[:50])) == 1   # primeiro grupo todo no mesmo cluster

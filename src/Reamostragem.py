@@ -12,18 +12,17 @@ class KFold:
         """Inicialização do método Kfold
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída
-        k: número de folds (Default: 5)
-        hip: hiperparâmetros do modelo. Assume que o modelo possui um hiperparâmetro como seu único argumento posicional (Default: None)"""
-
+            model : classe do modelo a ser utilizado
+            data_x : np.ndarray com os dados de entrada
+            data_y : np.ndarray com os dados de saída
+            k : número de folds (Default: 5)
+            hip : hiperparâmetros do modelo. Assume que o modelo possui um hiperparâmetro como seu único argumento posicional (Default: None)"""
         self.model = model
         self.data_x = data_x
         self.data_y = data_y
         self.k = k
         self.hip = hip
-        temp = self.model()
+        temp = self.model(hip) if self.hip is not None else self.model()
         if hasattr(temp, "fit") == False:
             raise AttributeError("O modelo não contém a função 'fit' necessária")
         elif hasattr(temp,"predict") == False:
@@ -60,9 +59,10 @@ class LOOCV:
         """Inicialização do método LOOCV
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída"""
+            model : classe do modelo a ser utilizado
+            data_x : np.ndarray com os dados de entrada
+            data_y : np.ndarray com os dados de saída"""
+
         self.model = model
         self.data_x = data_x
         self.data_y = data_y
@@ -74,6 +74,7 @@ class LOOCV:
 
     def LOO(self):
         """Aplicação do LOOCV"""
+
         lista = []
         for i in range(len(self.data_y)):
             data_xi = np.delete(self.data_x,i, axis=0)
@@ -82,7 +83,8 @@ class LOOCV:
             modelo_i = self.model()
             modelo_i.fit(data_xi,data_yi)
             y_hat_i = modelo_i.predict(self.data_x[i])      #i-ésimo ŷ de teste
-            msei = MSE(y_hat_i,self.data_y[i])
+            #print(f"y_hat_i: {y_hat_i}, y_true: {self.data_y[i]}")
+            msei = MSE(y_hat_i,np.array([self.data_y[i]]))
             lista.append(msei)
 
         return np.mean(lista)
@@ -100,11 +102,11 @@ class Bootstrap:
         ou que aceita dados no mesmo padrão 
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída
-        n: número de iterações do bootstrap (default: 1000)
-        stat: estatística a ser calculada (default: MSE)"""
+            model : classe do modelo a ser utilizado
+            data_x : np.ndarray com os dados de entrada
+            data_y : np.ndarray com os dados de saída
+            n : número de iterações do bootstrap (default: 1000)
+            stat : estatística a ser calculada (default: MSE)"""
     
         self.model = model
         self.data_x = data_x
@@ -195,11 +197,11 @@ class FindHiperParam:
         que o modelo possui apenas um hiperparâmetro e que este é dado pelo único argumento posicional.
         Parâmetros
         ----------
-        model: classe do modelo a ser utilizado
-        data_x: np.ndarray com os dados de entrada
-        data_y: np.ndarray com os dados de saída
-        grid: lista de valores de hiperparâmetros a serem testados (default: [0.1,1,10,100,1000])
-        step: passo para a busca (default: 10)"""
+            model: classe do modelo a ser utilizado
+            data_x: np.ndarray com os dados de entrada
+            data_y: np.ndarray com os dados de saída
+            grid: lista de valores de hiperparâmetros a serem testados (default: [0.1,1,10,100,1000])
+            step: passo para a busca (default: 10)"""
 
         self.grid = grid
         self.data_x = data_x
@@ -222,10 +224,13 @@ class FindHiperParam:
         return best.fit(self.data_x,self.data_y), minim
 
 if __name__ == "__main__":
+    from Regressao import RegressaoPolinomial
+    seed = 42
+    np.random.seed(seed)
     class ConstantModel:
         """Classe de teste com y fixo"""
 
-        def __init__(self, value=0):
+        def __init__(self, value=3.0):
             self.value = value
 
         def fit(self, X, y):
@@ -234,6 +239,17 @@ if __name__ == "__main__":
         def predict(self, X):
             return np.full(len(X), self.value)
 
+    class ConstantModelWithHyperparameter:
+        """Classe de teste com y fixo e hiperparâmetro"""
+
+        def __init__(self, hyperparameter):
+            self.hyperparameter = hyperparameter
+
+        def fit(self, X, y):
+            return self
+
+        def predict(self, X):
+            return np.full(len(X), self.hyperparameter)
 
     def test_find_selects_best_hyperparameter():
         X = np.arange(20).reshape(-1, 1)
@@ -256,5 +272,59 @@ if __name__ == "__main__":
         print("Tudo OK")
 
 
+    def test_find_selects_best_hyperparameter_with_hyperparameter():
+        X = np.arange(20).reshape(-1, 1)
+        y = np.full(20, 5.0)
+
+        search = FindHiperParam(
+            ConstantModelWithHyperparameter,
+            X,
+            y,
+            grid=[0, 5, 10]
+        )
+
+        model, best_hip = search.find()
+        mse = np.mean((model.predict(X) - y) ** 2)
+
+        assert best_hip == 5, "O melhor hiperparâmetro deveria ser 5"
+        assert isinstance(model, ConstantModelWithHyperparameter), "Model não é uma instância de ConstantModelWithHyperparameter"
+        assert mse == 0, "MSE deveria ser 0 para o melhor hiperparâmetro"
+
+        print("Tudo OK com hiperparâmetro")
+
+    def test_LOOCV():
+        X = np.arange(20).reshape(-1, 1)
+        y = np.full(20, 3.0)
+
+        loocv = LOOCV(ConstantModel, X, y)
+        mse = loocv.LOO()
+
+        assert mse == 0, "MSE deveria ser 0 para o modelo constante"
+
+        print("LOOCV OK")
+
+    def test_bootstrap():
+        X = np.arange(20).reshape(-1, 1)
+        y = np.full(20, 3.0)
+
+        bootstrap = Bootstrap(RegressaoPolinomial, X, y, n=100)
+        arr = bootstrap.build_array()
+        mean = bootstrap.mean()
+        std_dev = bootstrap.std_dev()
+        conf_int = bootstrap.conf_int(alpha=0.05)
+
+        print(mean, std_dev, conf_int)
+
+        assert len(arr) == 100, "O array de estatísticas deveria ter tamanho 100"
+        assert abs(mean) <= 10**9, "A média deveria ser 0 para o modelo constante"
+        assert std_dev <= 10**9, "O desvio padrão deveria ser 0 para o modelo constante"
+        assert abs(conf_int[0]) <= 10**9 and abs(conf_int[1]) <= 10**9, "O intervalo de confiança deveria ser [0, 0] para o modelo constante"
+
+        print("Bootstrap OK")
+
+
 
     test_find_selects_best_hyperparameter()
+    test_find_selects_best_hyperparameter_with_hyperparameter()
+    test_LOOCV()
+    test_bootstrap()

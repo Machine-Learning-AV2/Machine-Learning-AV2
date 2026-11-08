@@ -11,7 +11,9 @@ def validate_matrix(X) -> np.ndarray:
     """Converts X to a 2D float numpy matrix (n_samples, n_features)
 
     Parameters
-    X : Input data."""
+    -----------Z
+        X : Input data, can be a list, tuple, or numpy array.
+    """
 
     try:
         X = np.asarray(X, dtype=float)
@@ -32,18 +34,21 @@ def train_test_split(X: np.ndarray, y: np.ndarray, test_size: float = 0.25, seed
     """Shuffles the data and splits it into training and test sets
 
     Parameters
-    X : Matrix (n_samples, n_features) with the independent variables;
-    y : Vector (n_samples,) with the dependent variables;
-    test_size : Fraction of the data that goes to the test set;
-    seed : Seed of the random generator, for reproducible results.
+    -----------
+        X : Matrix (n_samples, n_features) with the independent variables;
+        y : Vector (n_samples,) with the dependent variables;
+        test_size : Fraction of the data that goes to the test set;
+        seed : Seed of the random generator, for reproducible results.
 
     Returns
-    X_train, X_test, y_train, y_test
+    -----------
+        X_train, X_test, y_train, y_test
 
     Examples
-    X = np.arange(20).reshape(10, 2)
-    y = np.arange(10)
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, 0.3, seed=0) # 7 training samples and 3 test samples"""
+    -----------
+        X = np.arange(20).reshape(10, 2)
+        y = np.arange(10)
+        X_tr, X_te, y_tr, y_te = train_test_split(X, y, 0.3, seed=0) # 7 training samples and 3 test samples"""
 
     X = np.asarray(X)
     y = np.asarray(y)
@@ -75,13 +80,15 @@ class StandardScaler:
         Constant columns (standard deviation 0) become 0, avoiding division by zero.
 
         Attributes
-        mean : Mean of each feature in the training data;
-        std : Standard deviation of each feature in the training data.
+        -----------
+            mean : Mean of each feature in the training data;
+            std : Standard deviation of each feature in the training data.
 
         Examples
-        standardScaler = StandardScaler()
-        X_train_s = standardScaler.fit_transform(X_train)
-        X_test_s = standardScaler.transform(X_test) # Uses the training mean and standard deviation"""
+        --------
+            standardScaler = StandardScaler()
+            X_train_s = standardScaler.fit_transform(X_train)
+            X_test_s = standardScaler.transform(X_test) # Uses the training mean and standard deviation"""
 
         self.mean = None
         self.std = None
@@ -168,14 +175,21 @@ class CategoricalEncoder:
         Attributes
         categories : Categories found in fit, in ascending order.
 
+
         Examples
-        color = np.array(['blue', 'green', 'blue', 'red'])
-        CategoricalEncoder().fit_transform(color)
-        # Columns: blue, green, red
-        # [[1, 0, 0],
-        #  [0, 1, 0],
-        #  [1, 0, 0],
-        #  [0, 0, 1]]"""
+        --------
+        ::
+
+            color = np.array(['blue', 'green', 'blue', 'red'])
+            CategoricalEncoder().fit_transform(color)
+
+            Columns: blue, green, red
+
+            [[1, 0, 0],
+            [0, 1, 0],
+            [1, 0, 0],
+            [0, 0, 1]]
+            """
 
         self.drop_first = drop_first
         self.categories = None
@@ -217,21 +231,27 @@ class ColumnCategoricalEncoder:
         The other columns must be numeric and are kept unchanged.
 
         Parameters
-        columns : List of indices (between 0 and m-1) of the qualitative columns to encode.
-                  If None, no column is encoded (Default: None);
-        drop_first : Passed to each CategoricalEncoder (Default: False).
+        -----------
+            columns : List of indices (between 0 and m-1) of the qualitative columns to encode.
+                    If None, no column is encoded (Default: None);
+            drop_first : Passed to each CategoricalEncoder (Default: False).
 
         Attributes
-        encoders : Dictionary {column index: fitted CategoricalEncoder of that column, the corresponding object self from the CategoricalEncoder class};
-        n_features : Number of columns of the matrix used in fit (len(self.columns)).
+        -----------
+            encoders : Dictionary {column index: fitted CategoricalEncoder of that column, the corresponding object self from the CategoricalEncoder class};
+            n_features : Number of columns of the matrix used in fit (len(self.columns)).
 
-        Examples
-        X = np.array([['blue', 1.5], ['red', 2.0], ['blue', 0.5]], dtype=object)
-        ColumnCategoricalEncoder(columns=[0]).fit_transform(X)
-        # Columns: blue, red, original column 1
-        # [[1, 0, 1.5],
-        #  [0, 1, 2.0],
-        #  [1, 0, 0.5]]"""
+
+            Examples
+            --------
+            ::
+                X = np.array([['blue', 1.5], ['red', 2.0], ['blue', 0.5]], dtype=object)
+                ColumnCategoricalEncoder(columns=[0]).fit_transform(X)
+                Columns: blue, red, original column 1
+                [[1, 0, 1.5],
+                [0, 1, 2.0],
+                [1, 0, 0.5]]
+                """
 
         self.columns = [] if columns is None else list(columns)
         self.drop_first = drop_first
