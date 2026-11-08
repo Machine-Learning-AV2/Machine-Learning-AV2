@@ -17,7 +17,7 @@ class Regressao:
         raise NotImplementedError("O método predict deve ser implementado na subclasse.")
 
 class Lasso(Regressao):
-    def __init__(self, alpha=1.0, max_iter=1000, tol=1e-6):
+    def __init__(self, alpha, max_iter=1000, tol=1e-6):
         super().__init__()
         if alpha < 0:
             raise ValueError("O parâmetro alpha deve ser não-negativo.")
@@ -96,7 +96,7 @@ class Lasso(Regressao):
 
 
 class RegressaoPolinomial(Regressao):
-    def __init__(self, grau=2):
+    def __init__(self, grau: float):
         super().__init__()
 
         if not isinstance(grau, int) or isinstance(grau, bool) or grau < 1:
@@ -171,7 +171,7 @@ class MinimosQuadrados(Regressao):
         return X_design @ self.coeficientes
 
 class Ridge(Regressao):
-    def __init__(self, alpha=1.0):
+    def __init__(self, alpha: int):
         super().__init__()
 
         if alpha < 0:
