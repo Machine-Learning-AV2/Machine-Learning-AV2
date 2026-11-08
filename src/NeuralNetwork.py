@@ -1,6 +1,8 @@
 import numpy as np
-from . import Functions
-from .metricas import MSE, DMSE 
+import Functions
+from metricas import MSE, DMSE
+# from . import Functions
+# from .metricas import MSE, DMSE 
 from typing import Callable
 
 
@@ -144,18 +146,13 @@ class NeuralNetwork:
             epochs int : Quantidade de interações nos dados de treino (1000 por padrão).
         """
 
-        self.loss = loss
-        self.loss_diff = loss_diff
-
-        loss_function: str = 'MSE' #COLOCAR PARA PARAMETROS
-
         X = self._check_input(X)
         y = self._check_input(y)
 
 
         index: np.ndarray = np.arange(X.shape[1])
 
-        loss = self.loss(y, self.prevision(X))
+        loss_val = loss(y, self.prevision(X))
         for epoch in range(epochs):
             self._rng.shuffle(index)
 
@@ -165,16 +162,16 @@ class NeuralNetwork:
                 else:
                     B = index[i: i+batch]
 
-                self._backpropagation(X[:, B], y[:, B], loss_function = loss_function, learn_rate = learn_rate)
+                self._backpropagation(X[:, B], y[:, B], loss_diff = loss_diff , learn_rate = learn_rate)
 
-            loss_aux = self.loss(y, self.prevision(X))
+            loss_aux = loss(y, self.prevision(X))
 
-            if abs(loss - loss_aux) < tol:
+            if abs(loss_val - loss_aux) < tol:  
                 break
             else:
-                loss = loss_aux
+                loss_val = loss_aux
 
-    def _backpropagation(self, x: np.ndarray, y: np.ndarray, learn_rate: float = 0.1) -> None:
+    def _backpropagation(self, x: np.ndarray, y: np.ndarray, loss_diff = DMSE, learn_rate: float = 0.1) -> None:
         """
             Calcula as decidas de gradiente para cada peso e viés.
             
@@ -190,7 +187,7 @@ class NeuralNetwork:
         cost: list[np.ndarray] = [np.array([]) for _ in range(1, len(self.layers))]
 
         activate_function = self.activate_functions[-1]
-        cost[-1] = self.loss_diff(y.flatten(), self._state_layers[-1].flatten()) * self._function_dictionary[activate_function][1](self._state_linear[-1])
+        cost[-1] = loss_diff(self._state_layers[-1].T, y.T).T * self._function_dictionary[activate_function][1](self._state_linear[-1])
 
         for level in range(len(self.layers)-3, -1, -1):
             activate_function = self.activate_functions[level]
@@ -281,10 +278,10 @@ if __name__ == "__main__":
 
     f = lambda x: np.exp(x)
 
-    X = np.linspace(-2, 3, 10000).reshape(1, -1)
+    X = np.linspace(-2, 3, 1000).reshape(1, -1)
     y = f(X)
 
-    rn2.fit(X, y, batch=50, learn_rate=0.001, epochs=10000)
+    rn2.fit(X, y, batch=50, learn_rate=0.001, epochs=1000)
 
     for x1 in range(20):
         print(f"\nx_1={x1}, y_1={rn2.prevision(x1)}")
