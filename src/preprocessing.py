@@ -239,7 +239,7 @@ class ColumnCategoricalEncoder:
         Attributes
         -----------
             encoders : Dictionary {column index: fitted CategoricalEncoder of that column, the corresponding object self from the CategoricalEncoder class};
-            n_features : Number of columns of the matrix used in fit (len(self.columns)).
+            n_features : Number of columns of the matrix used in fit.
 
 
             Examples
