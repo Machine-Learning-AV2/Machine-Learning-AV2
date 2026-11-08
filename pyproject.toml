@@ -13,6 +13,7 @@ authors = [
   { name = "Kenzo Nagamine", email = "al.kenzo.nagamine@impatech.edu.br" },
   { name = "Lucas Caracas", email = "al.lucas.carlos@impatech.edu.br" },
   { name = "Natan Gabriel Spohr", email = "al.natan.spohr@impatech.edu.br" },
+  { name = "Pedro Pereira Carvalho", email = "al.pedro.carvalho@impatech.edu.br"},
 ]
 description = "Biblioteca para Machine Learning, métodos supervisionados e não supervisionados"
 readme = "README.md"
