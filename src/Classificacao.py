@@ -45,10 +45,11 @@ class KNN():
   def __init__(self, K: int = 5, p=2, normalize=False):
     """
     Inicia o modelo KNN
-
-    K: Inteiro que representa o tamanho da vizinhança observada em cada dado. Dessa vizinhança, a maioria elegerá a classe prevista.
-    p: A norma Lp (Σ Pi^p)^(1/p). Por padrão, a distância euclidiana dos pontos (L2).
-    normalize: Caso queira manter um desvio padrão consistente para todo preditor, torne isso True. Os dados serão normalizados para média 0 e variância 1.
+      --------------
+      K: Inteiro que representa o tamanho da vizinhança observada em cada dado. Dessa vizinhança, a maioria elegerá a classe prevista.
+      
+      p: A norma Lp (Σ Pi^p)^(1/p). Por padrão, a distância euclidiana dos pontos (L2).
+      normalize: Caso queira manter um desvio padrão consistente para todo preditor, torne isso True. Os dados serão normalizados para média 0 e variância 1.
     """
     
     if not isinstance(K, (int, np.integer)):
@@ -70,9 +71,10 @@ class KNN():
   def train(self, X: np.ndarray, Y: np.ndarray) -> None:
     """
     Treina o modelo KNN
+    -----------
+      X: array com todos os preditores dos dados de treino.
 
-    X: array com todos os preditores dos dados de treino.
-    Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
+      Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
     train_check(X, Y)
@@ -111,8 +113,8 @@ class KNN():
   def predict(self, L: np.ndarray) -> np.ndarray:
     """
     Retorna a previsão do KNN para os dados novos. O modelo deve ter sido treinado antes das previsões.
-
-    L: array de novos dados com seus preditores
+      -----------
+      L: array de novos dados com seus preditores
     """
     predictions = []
     for P in L:
@@ -380,6 +382,113 @@ class QDA():
     return np.array(predictions)
 
 
+class SVM():
+  """
+  O modelo de Support Vector Machine linear com margem flexível, treinado por descida do subgradiente no primal.
+  Com mais de duas classes, usa a estratégia um-contra-um (one-vs-one).
+  """
+  def __init__(self, C: float = 1.0, learning_rate: float = 0.01, max_iterations: int = 1000):
+    """
+    Inicia o modelo SVM
+
+    C: Peso da penalidade por violar a margem.
+    learning_rate: Valor do passo na descida do subgradiente.
+    max_iterations: Número de passos (cada um usa todos os dados de treino) que o algoritmo executa.
+    """
+
+    if C <= 0:
+      raise ValueError("C must be positive number")
+    if learning_rate <= 0:
+      raise ValueError("learning_rate must be positive number")
+    if not isinstance(max_iterations, (int, np.integer)):
+      raise TypeError("max_iterations must be integer number")
+    if max_iterations <= 0:
+      raise ValueError("max_iterations must be positive number")
+
+    self.C = C
+    self.alpha = learning_rate
+    self.max_iterations = max_iterations
+    self.values = None
+    self.n_features = None
+    self.machines = None  # Lista de (i, j, w, b): SVM binário entre as classes values[i] (-1) e values[j] (+1)
+
+  def train_binary(self, X: np.ndarray, y: np.ndarray):
+    # Minimiza J(w,b) = 1/2 ||w||^2 + C/N Σ max(0, 1 - y_i (w^T x_i + b)). Os rótulos y são -1 ou +1.
+    N, n_parameters = X.shape
+    w = np.zeros(n_parameters)
+    b = 0.0
+
+    for _ in range(self.max_iterations):
+      # Margens e conjunto M dos exemplos que violam a margem: y_i (w^T x_i + b) < 1
+      # influencia que hinge loss penaliza pontos que não respeitam a margem funcional de 1.
+      margins = y * (X @ w + b)
+      M = margins < 1
+
+      # Subgradientes de J
+      grad_w = w - (self.C / N) * (y[M] @ X[M])
+      grad_b = -(self.C / N) * np.sum(y[M])
+
+      w = w - self.alpha * grad_w
+      b = b - self.alpha * grad_b
+
+    return w, b
+
+  def train(self, X: np.ndarray, Y: np.ndarray) -> None:
+    """
+    Treina o modelo SVM
+
+    X: array com todos os preditores dos dados de treino.
+    Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X. Precisa conter pelo menos 2 classes.
+    """
+
+    train_check(X, Y)
+
+    values = np.unique(Y)
+
+    X = X.astype(float)
+
+    # Um SVM binário para cada par de classes (i < j). A classe values[i] vira -1 e values[j] vira +1.
+    machines = []
+    for i in range(len(values)):
+      for j in range(i + 1, len(values)):
+        pair = (Y == values[i]) | (Y == values[j]) #pega apneas as amostras das duas classes atuais
+        y = np.where(Y[pair] == values[j], 1.0, -1.0) #colocando rótulos 1 e -1
+        w, b = self.train_binary(X[pair], y)
+        machines.append((i, j, w, b))
+
+    self.values = values
+    self.n_features = X.shape[1]
+    self.machines = machines
+
+  def predict_element(self, P: np.ndarray):
+    if self.machines is None:
+      raise TypeError("The model must be trained")
+
+    predict_element_check(P, self.n_features)
+
+    return self.predict(P.reshape(1, -1))[0]
+
+  def predict(self, L: np.ndarray) -> np.ndarray:
+    """
+    Retorna a previsão do SVM para os dados novos. O modelo deve ter sido treinado antes das previsões.
+    Cada SVM binário vota em uma de suas duas classes, e vence a classe com mais votos (em empate, a menor na ordem crescente das classes).
+
+    L: array de novos dados com seus preditores
+    """
+
+    if self.machines is None:
+      raise TypeError("The model must be trained")
+
+    for P in L:
+      predict_element_check(P, self.n_features)
+
+    votes = np.zeros((len(L), len(self.values)), dtype=int)
+    for i, j, w, b in self.machines:
+      # w^T x + b >= 0 vota em values[j]; caso contrário, em values[i]
+      winners = np.where(L @ w + b >= 0, j, i)
+      votes[np.arange(len(L)), winners] += 1 #arange cria um vetor com indices de L
+
+    return self.values[np.argmax(votes, axis=1)]
 # -----TESTES-----
 print("Sigmoide(0) = ", sigmoid(0))
 print("Sigmoide(1) = ", sigmoid(1))
@@ -410,6 +519,9 @@ modelKNN1 = KNN(K=1)
 modelKNN10 = KNN(K=10)
 modelLDA = LDA()
 modelQDA = QDA()
+modelSVM = SVM()
+modelSVMHC = SVM(C=10)
+modelSVMFI = SVM(max_iterations=2)
 
 # Para os testes abaixo, o LDA e o QDA foram testados separadamente nos itens em que se aplicam
 def test(X, Y, X_teste):
@@ -420,6 +532,9 @@ def test(X, Y, X_teste):
   modelKNN5.train(X, Y)
   modelKNN1.train(X, Y)
   modelKNN10.train(X, Y)
+  modelSVM.train(X, Y)
+  modelSVMHC.train(X, Y)
+  modelSVMFI.train(X, Y)
 
   print("Regressão Logística: ", modelRL.predict(X_teste))
   print("Regressão Logística sem intercepto: ", modelRLNI.predict(X_teste))
@@ -428,6 +543,9 @@ def test(X, Y, X_teste):
   print("KNN com K=5: ", modelKNN5.predict(X_teste))
   print("KNN com K=1: ", modelKNN1.predict(X_teste))
   print("KNN com K=10: ", modelKNN10.predict(X_teste))
+  print("SVM: ", modelSVM.predict(X_teste))
+  print("SVM com C=10: ", modelSVMHC.predict(X_teste))
+  print("SVM com poucas iterações: ", modelSVMFI.predict(X_teste))
 
 # Vários pontos
 X = np.array([[0, 0], [1, -0.5], [2, 2], [3, 5], [-3, 10], [4, 2.5], [1.5, 3.5], [-1, 1.5], [-3, 2.5], [-2.5, -0.5], [-0.5, -1], [-2, 7], [-2.5, 6]])
@@ -482,8 +600,8 @@ print("LDA: ", modelLDA.predict(X_teste))
 print()
 
 # Teste métrica KNN
-modelKNN2 = KNN(K=2)
-modelKNN2sigma = KNN(K=2, normalize=True)
+modelKNN2 = KNN(2)
+modelKNN2sigma = KNN(2, normalize=True)
 X = np.array([[10, 10], [11, 11], [8, 9], [0, 0], [1, -1], [-1000, 1]])
 Y = np.array(["Direito", "Direito", "Direito", "Esquerdo", "Esquerdo", "Esquerdo"])
 X_teste = np.array([[11, 1]])
