@@ -129,7 +129,7 @@ class NeuralNetwork:
         
         return array
 
-    def train(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = lambda y, y_pred: 2*(y_pred - y)/ y.shape[1], learn_rate: float = 0.1, 
+    def fit(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = lambda y, y_pred: 2*(y_pred - y)/ y.shape[1], learn_rate: float = 0.1, 
               batch: int = 10, epochs: int = 1000, tol = 1e-9) -> None:
         """
             Treina a rede neural a partir dos dados X, y
@@ -261,7 +261,7 @@ if __name__ == "__main__":
         else:
             y[:, i] = [0, 1]
 
-    rn1.train(X, y, batch=50)
+    rn1.fit(X, y, batch=50)
 
     x1 = np.array([[1], [0]])
     x2 = np.array([[3], [3]])
@@ -286,7 +286,7 @@ if __name__ == "__main__":
     X = np.linspace(-2, 3, 10000).reshape(1, -1)
     y = f(X)
 
-    rn2.train(X, y, batch=50, learn_rate=0.001, epochs=10000)
+    rn2.fit(X, y, batch=50, learn_rate=0.001, epochs=10000)
 
     for x1 in range(20):
         print(f"\nx_1={x1}, y_1={rn2.prevision(x1)}")

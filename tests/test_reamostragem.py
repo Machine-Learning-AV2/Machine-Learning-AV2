@@ -48,7 +48,6 @@ if __name__ == "__main__":
 
         print("Tudo OK")
 
-
     def test_find_selects_best_hyperparameter_with_hyperparameter():
         X = np.arange(20).reshape(-1, 1)
         y = np.full(20, 5.0)
@@ -125,7 +124,6 @@ if __name__ == "__main__":
         mse = kfold.folds()
 
         print(f"KFold MSE para KNN: {mse}")
-
 
     def test_with_svm():
         from src.Classificacao import SVM
