@@ -15,7 +15,7 @@ Os métodos descritos nesta seção são aplicáveis a todas as classes do módu
 
 **Importante:** todos os dados de entrada devem ser do tipo `np.ndarray`.
 
-### `model.train(X, Y) -> None`
+### `model.fit(X, Y) -> None`
 
 Treina o modelo utilizando os dados fornecidos.
 
@@ -40,7 +40,7 @@ Realiza previsões de classificação para novas observações.
 
 **Observações:**
 
-- O modelo deve ter sido previamente treinado com `model.train()`.
+- O modelo deve ter sido previamente treinado com `model.fit()`.
 - Alguns algoritmos possuem condições específicas para funcionarem satisfatoriamente. Recomenda-se conhecer as particularidades de cada método antes de utilizá-lo.
 
 ---
@@ -107,7 +107,7 @@ A seguir, apresentamos um exemplo de utilização do módulo com dados artificia
 import numpy as np
 
 # Dados de treinamento
-X_train = np.array([
+X_fit = np.array([
     [1.0, 1.0], [1.5, 2.0],
     [2.0, 1.0], [2.5, 2.5],
     [3.0, 1.5], [1.0, 3.0],
@@ -128,7 +128,7 @@ X_train = np.array([
 ])
 
 # Classes correspondentes aos dados de treinamento
-y_train = np.array([0]*10 + [1]*10 + [2]*10)
+y_fit = np.array([0]*10 + [1]*10 + [2]*10)
 
 # Dados de teste
 X_test = np.array([
@@ -153,7 +153,7 @@ X_test = np.array([
 model = KNN(K=3)
 
 # Treinamento
-model.train(X_train, y_train)
+model.fit(X_fit, y_fit)
 
 # Previsões
 print(model.predict(X_test))
