@@ -60,10 +60,10 @@ Retorna
 -----------
 matriz dos pesos com dimenção da largura do layer[nivel] x layer[nivel-1]
 
-### *NeuralNetwork.NeuralNetwork.train*
+### *NeuralNetwork.NeuralNetwork.fit*
 
 ```python
-NeuralNetwork.NeuralNetwork.train(X, y: np.ndarray, loss = MSE, loss_diff = DMSE, learn_rate = 0.1, batch = 10, epochs = 1000, tol = 1e-9)
+NeuralNetwork.NeuralNetwork.fit(X, y: np.ndarray, loss = MSE, loss_diff = DMSE, learn_rate = 0.1, batch = 10, epochs = 1000, tol = 1e-9, debug = False)
 ```
 
 Treina a rede neural a partir dos dados X, y
@@ -76,7 +76,8 @@ loss Callable : Função perda para aprendizado;\
 loss_diff Callable : Derivada da função perda para backpropagation;\
 learn_rate float : Taxa de aprendizado (0.1 por padrão);\
 batch int : Quantidade esperada de elementos por balde (10 por padrão);\
-epochs int : Quantidade de interações nos dados de treino (1000 por padrão).
+epochs int : Quantidade de interações nos dados de treino (1000 por padrão)\
+debug bool : Quando True mostra em qual epoca está e qual a perda do momento (False por padrão)
 
 ### *NeuralNetwork.NeuralNetwork.prevision*
 
