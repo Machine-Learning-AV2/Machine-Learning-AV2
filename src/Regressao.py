@@ -1,4 +1,3 @@
-
 import numpy as np
 import warnings
 
@@ -71,7 +70,7 @@ class Lasso(Regressao):
     quando as features possuem escalas muito diferentes.
     """
 
-    def __init__(self, alpha=1.0, max_iter=1000, tol=1e-6):
+    def __init__(self, alpha=1.0, max_iter=1000, tol=1e-9):
         super().__init__()
 
         if not np.isfinite(alpha) or alpha < 0:
