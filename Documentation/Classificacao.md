@@ -107,7 +107,7 @@ A seguir, apresentamos um exemplo de utilização do módulo com dados artificia
 import numpy as np
 
 # Dados de treinamento
-X_train = np.array([
+X_fit = np.array([
     [1.0, 1.0], [1.5, 2.0],
     [2.0, 1.0], [2.5, 2.5],
     [3.0, 1.5], [1.0, 3.0],
@@ -128,7 +128,7 @@ X_train = np.array([
 ])
 
 # Classes correspondentes aos dados de treinamento
-y_train = np.array([0]*10 + [1]*10 + [2]*10)
+y_fit = np.array([0]*10 + [1]*10 + [2]*10)
 
 # Dados de teste
 X_test = np.array([
@@ -153,7 +153,7 @@ X_test = np.array([
 model = KNN(K=3)
 
 # Treinamento
-model.fit(X_train, y_train)
+model.fit(X_fit, y_fit)
 
 # Previsões
 print(model.predict(X_test))
