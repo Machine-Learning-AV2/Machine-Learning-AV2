@@ -129,7 +129,7 @@ class NeuralNetwork:
         return array
 
     def fit(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = DMSE, learn_rate: float = 0.1, 
-              batch: int = 10, epochs: int = 1000, tol = 1e-9) -> None:
+              batch: int = 10, epochs: int = 1000, tol = 1e-9, debug: bool = False) -> None:
         """
             Treina a rede neural a partir dos dados X, y
             
@@ -143,15 +143,16 @@ class NeuralNetwork:
             batch int : Quantidade esperada de elementos por balde (10 por padrão);
             epochs int : Quantidade de interações nos dados de treino (1000 por padrão).
         """
-
-        X = self._check_input(X)
-        y = self._check_input(y)
+        X = self._check_input(X.T)
+        y = self._check_input(y.T)
 
 
         index: np.ndarray = np.arange(X.shape[1])
 
-        loss_val = loss(y, self.prevision(X))
+        loss_val = loss(self.prevision(X.T), y.T)
         for epoch in range(epochs):
+            if debug:
+                print(f"Iniciando epoca {epoch}, com erro {loss_val}")
             self._rng.shuffle(index)
 
             for i in range(0, X.shape[1], batch):
@@ -162,9 +163,9 @@ class NeuralNetwork:
 
                 self._backpropagation(X[:, B], y[:, B], loss_diff = loss_diff , learn_rate = learn_rate)
 
-            loss_aux = loss(y, self.prevision(X))
+            loss_aux = loss(self.prevision(X.T), y.T)
 
-            if abs(loss_val - loss_aux) < tol:  
+            if abs(loss_val - loss_aux) / max(abs(loss_val), 1e-9) < tol:
                 break
             else:
                 loss_val = loss_aux
@@ -181,7 +182,7 @@ class NeuralNetwork:
         """
 
 
-        self.prevision(x, save_states=True)
+        self.prevision(x.T, save_states=True)
         cost: list[np.ndarray] = [np.array([]) for _ in range(1, len(self.layers))]
 
         activate_function = self.activate_functions[-1]
@@ -212,6 +213,8 @@ class NeuralNetwork:
         """
 
         x = self._check_input(x)
+        x = x.T
+
 
         y: np.ndarray = x.copy()
 
@@ -234,7 +237,7 @@ class NeuralNetwork:
         if classify:
             return np.argmax(y)
 
-        return y
+        return y.T
 
 
 if __name__ == "__main__":
@@ -245,20 +248,20 @@ if __name__ == "__main__":
     rn1 = NeuralNetwork([2, 4, 5, 2], activate_function="sigmoid", output_activation="sigmoid", bias_interval = (-1, 1), weight_interval = (-1, 1))
 
     rng = np.random.default_rng(1)
-    X = rng.uniform(-4, 4, (2, 1000))
+    X = rng.uniform(-4, 4, (1000, 2))
     y = np.zeros(X.shape)
 
-    for i, x in enumerate(X.T):
+    for i, x in enumerate(X):
         if x[0]**2 + x[1]**2 <= 9:
-            y[:, i] = [1, 0]
+            y[i, :] = [1, 0]
         else:
-            y[:, i] = [0, 1]
+            y[i, :] = [0, 1]
 
     rn1.fit(X, y, batch=50)
 
-    x1 = np.array([[1], [0]])
-    x2 = np.array([[3], [3]])
-    x3 = np.array([[5], [5]])
+    x1 = np.array([1, 0])
+    x2 = np.array([3, 3])
+    x3 = np.array([5, 5])
 
     print(f"\nx_1=({x1[0]}, {x1[1]}) y_1 = {rn1.prevision(x1)}")
     print(f"\ny_2 = {rn1.prevision(x2)}")
@@ -276,7 +279,7 @@ if __name__ == "__main__":
 
     f = lambda x: np.exp(x)
 
-    X = np.linspace(-2, 3, 1000).reshape(1, -1)
+    X = np.linspace(-2, 3, 1000).reshape(-1, 1)
     y = f(X)
 
     rn2.fit(X, y, batch=50, learn_rate=0.001, epochs=1000)
