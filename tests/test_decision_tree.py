@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.arvores_decisao import (
+from src.decision_tree import (
     DecisionTreeClassification,
     DecisionTreeRegression
 )
@@ -76,4 +76,3 @@ def test_classificacao_dados_vazios():
 
     with pytest.raises(ValueError):
         arvore.adjust(np.empty((0, 1)), np.array([]))
-```
