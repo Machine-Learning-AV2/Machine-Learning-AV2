@@ -74,35 +74,35 @@ y_test = np.array([0]*5 + [1]*5 + [2]*5)
 
 def test_logistic_regression():
     model = Logistic_Regression()
-    model.train(X_train, y_train)
+    model.fit(X_train, y_train)
 
     assert np.all(model.predict(X_test) == y_test)
 
 
 def test_knn():
     model = KNN()
-    model.train(X_train, y_train)
+    model.fit(X_train, y_train)
 
     assert np.all(model.predict(X_test) == y_test)
 
 
 def test_lda():
     model = LDA()
-    model.train(X_train, y_train)
+    model.fit(X_train, y_train)
 
     assert np.all(model.predict(X_test) == y_test)
 
 
 def test_qda():
     model = QDA()
-    model.train(X_train, y_train)
+    model.fit(X_train, y_train)
 
     assert np.all(model.predict(X_test) == y_test)
 
 
 def test_svm():
     model = SVM()
-    model.train(X_train, y_train)
+    model.fit(X_train, y_train)
 
     assert np.all(model.predict(X_test) == y_test)
 
@@ -114,16 +114,15 @@ def test_knn_different_values_of_k():
         [0.0, 0.0],
         [0.0, 2.0],
         [2.0, 0.0],
-        [1.0, 1.0]
-    ])
+        [1.0, 1.0]])
 
     y = np.array([0, 0, 0, 1])
 
     modelK1 = KNN(K=1)
     modelK3 = KNN(K=3)
 
-    modelK1.train(X, y)
-    modelK3.train(X, y)
+    modelK1.fit(X, y)
+    modelK3.fit(X, y)
 
     X_test = np.array([[1.0, 0.9]])
 
