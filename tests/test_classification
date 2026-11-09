@@ -18,9 +18,9 @@ assert s[0] > s[1]
 
 s = softmax(np.array([5]))
 assert abs(s[0] - 1) < tol
-
+n
 s = softmax(np.array([1, 1.01]))
-assert (s[1]-s[0]) > tol and (s[1]-s[0]) < 1
+assert (s[1]-s[0]) > tol and (s[1]-s[0]) < 0.01
 
 # Modelos
 
