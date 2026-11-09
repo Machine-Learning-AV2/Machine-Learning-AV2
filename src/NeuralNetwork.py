@@ -150,7 +150,7 @@ class NeuralNetwork:
 
         index: np.ndarray = np.arange(X.shape[1])
 
-        loss_val = loss(y, self.prevision(X))
+        loss_val = loss(self.prevision(X), y)
         for epoch in range(epochs):
             self._rng.shuffle(index)
 
@@ -162,7 +162,7 @@ class NeuralNetwork:
 
                 self._backpropagation(X[:, B], y[:, B], loss_diff = loss_diff , learn_rate = learn_rate)
 
-            loss_aux = loss(y, self.prevision(X))
+            loss_aux = loss(self.prevision(X), y)
 
             if abs(loss_val - loss_aux) < tol:  
                 break
