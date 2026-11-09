@@ -1,6 +1,6 @@
-import pytest
 import numpy as np
 from src.metricas import *
+import pytest
 
 # Tolerância
 tol = 1e-9
