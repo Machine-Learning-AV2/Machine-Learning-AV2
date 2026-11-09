@@ -1,4 +1,3 @@
-
 import numpy as np
 import warnings
 
@@ -71,7 +70,7 @@ class Lasso(Regressao):
     quando as features possuem escalas muito diferentes.
     """
 
-    def __init__(self, alpha=1.0, max_iter=1000, tol=1e-6):
+    def __init__(self, alpha=1.0, max_iter=1000, tol=1e-9):
         super().__init__()
 
         if not np.isfinite(alpha) or alpha < 0:
@@ -199,6 +198,22 @@ class RegressaoPolinomial(Regressao):
 
 
 class MinimosQuadrados(Regressao):
+    """
+    Regressão Linear por Mínimos Quadrados Ordinários (MQO).
+
+    Minimiza a soma dos quadrados dos resíduos:
+
+        min_beta ||y - X_design @ beta||²
+
+    O modelo inclui intercepto automaticamente, adicionando
+    uma coluna de 1s à matriz de atributos.
+
+    Os coeficientes são estimados utilizando np.linalg.lstsq,
+    que resolve o problema de mínimos quadrados por métodos
+    numéricos estáveis, inclusive quando a matriz não possui
+    posto completo.
+    """
+
     def fit(self, X, y):
         X, y = self._validar(X, y)
 
