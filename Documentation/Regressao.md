@@ -13,7 +13,7 @@ Observação: Como os algoritmos funcionam está melhor explicado no docstring d
 
 ## 1. Métodos comuns às classes
 
-Os métodos descritos nesta seção são aplicáveis a todas as classes do módulo `Regression.py`. Para simplificar, utilizamos a classe `Regressao` como referência genérica a qualquer modelo de Regressão.
+Os métodos descritos nesta seção são aplicáveis a todas as classes do módulo `Regression.py`. Para simplificar, utilizamos a classe `Regressao` como referência genérica a qualquer modelo de Regressão. Além de ser uma forma de padronizar as classes, também tem a função `_validar` que certifica que a entrada dos parâmetros `X` e `Y` estão corretos antes de serem usados no seu respectivo modelo.
 
 **Importante:** todos os dados de entrada devem ser do tipo `np.ndarray`.
 
