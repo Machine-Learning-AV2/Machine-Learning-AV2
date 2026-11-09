@@ -25,12 +25,12 @@ def test_pca():
     t = rng.normal(size=200)
     X = np.column_stack([t, 2 * t]) + 0.01 * rng.normal(size=(200, 2))
 
-    PCA = PCA()
-    Z = PCA.fit_transform(X, n_components=1)
+    modelo = PCA()
+    Z = modelo.fit_transform(X, n_components=1)
 
     esperado = np.array([1, 2]) / np.sqrt(5)
 
-    assert np.isclose(abs(PCA.components[:, 0] @ esperado), 1, atol=1e-3)
+    assert np.isclose(abs(modelo.components[:, 0] @ esperado), 1, atol=1e-3)
     assert Z.shape == (200, 1)
 
     print("PCA OK")
