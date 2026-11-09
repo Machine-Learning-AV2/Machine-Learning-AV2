@@ -239,6 +239,53 @@ class NeuralNetwork:
 
         return y.T
 
+    def save(self, path: str) -> None:
+        """
+        Salva o estado atual da rede neural quadando layers, activate functions, weight e bias
+                    
+        Recomenda-se usar a extenção .npz
+
+        Parâmetros
+        -----------
+        path str : Caminho na qual o arquivo deve ficar salvo
+        """
+        data = {
+            "layers": np.asarray(self.layers),
+            "activate_functions": np.asarray(self.activate_functions, dtype=str)
+        }
+
+        for i, (w, b) in enumerate(zip(self.weight, self.bias)):
+            data[f"weight_{i}"] = w
+            data[f"bias_{i}"] = b
+
+        np.savez_compressed(path, **data)
+
+
+def load_neural_network(path: str) -> NeuralNetwork:
+    """
+    Carrega o estado de uma rede neural, le: layers, activate functions, weight e bias
+                        
+    Parâmetros
+    -----------
+    path str : Caminho na qual o arquivo deve ler as informações
+
+    Retorno
+    -----------
+    Retorna uma NeuralNetwork com layers, activate functions, weight e bias definidos pelo arquivo
+    """
+    with np.load(path, allow_pickle=False) as data:
+        layers = list(data['layers'])
+        activate_functions = list(data['activate_functions'])
+
+        weights = [data[f"weight_{i}"].copy() for i in range(len(layers)-1)]
+        biases = [data[f"bias_{i}"].copy() for i in range(len(layers)-1)]
+
+        nn = NeuralNetwork(layers, activate_functions[:-1], activate_functions[-1])
+        nn.bias = biases
+        nn.weight = weights
+
+        return nn
+
 
 if __name__ == "__main__":
 
