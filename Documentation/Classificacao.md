@@ -15,7 +15,7 @@ Os métodos descritos nesta seção são aplicáveis a todas as classes do módu
 
 **Importante:** todos os dados de entrada devem ser do tipo `np.ndarray`.
 
-### `model.train(X, Y) -> None`
+### `model.fit(X, Y) -> None`
 
 Treina o modelo utilizando os dados fornecidos.
 
@@ -40,7 +40,7 @@ Realiza previsões de classificação para novas observações.
 
 **Observações:**
 
-- O modelo deve ter sido previamente treinado com `model.train()`.
+- O modelo deve ter sido previamente treinado com `model.fit()`.
 - Alguns algoritmos possuem condições específicas para funcionarem satisfatoriamente. Recomenda-se conhecer as particularidades de cada método antes de utilizá-lo.
 
 ---
@@ -153,7 +153,7 @@ X_test = np.array([
 model = KNN(K=3)
 
 # Treinamento
-model.train(X_train, y_train)
+model.fit(X_train, y_train)
 
 # Previsões
 print(model.predict(X_test))
@@ -171,4 +171,4 @@ Esse resultado representa a classificação das 15 observações do conjunto de 
 
 ---
 
-**Nota:** o exemplo utiliza KNN apenas para ilustrar o fluxo de utilização. Os demais classificadores seguem a mesma interface de treinamento e previsão (`train()` e `predict()`).
+**Nota:** o exemplo utiliza KNN apenas para ilustrar o fluxo de utilização. Os demais classificadores seguem a mesma interface de treinamento e previsão (`fit()` e `predict()`).
