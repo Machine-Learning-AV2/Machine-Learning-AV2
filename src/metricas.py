@@ -43,10 +43,8 @@ def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([])
     if x.shape != y.shape:
         raise ValueError('Os dois vetores devem ter o mesmo tamanho')
     if l.size > 0:
-        for i in l:
-            size = l.shape
-            if size[1] != 3:
-                raise TypeError('As restrições devem conter o valor previsto, o observado e o peso da penalidade (apenas)')
+        if l.ndim != 2 or l.shape[1] != 3:
+            raise TypeError('As restrições devem conter o valor previsto, o observado e o peso da penalidade (apenas)')
     if not isinstance(subs, (int, float)):
         raise TypeError('O valor de substituição padrão deve ser numérico')
     
@@ -244,7 +242,7 @@ def R2(x:np.ndarray, y:np.ndarray) -> float:
 # Derivada do risco empírico para calcular a descida de gradiente
 def dif_empirical_risk(x: np.ndarray, y:np.ndarray, p:float, tol:float = 1e-9) -> np.ndarray:
 
-    """Retorna o valor da deerivada () do risco empírico de uma previsão segundo a função loss desejada
+    """Retorna o valor da derivada () do risco empírico de uma previsão segundo a função loss desejada
     
     Parâmetros
     -----------
