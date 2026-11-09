@@ -3,7 +3,7 @@ from .metricas import dist
 from .Functions import sigmoid, softmax
 
 # Verifica se os dados de input para treino possuem algum erro
-def train_check(X: np.ndarray, Y: np.ndarray) -> None:
+def fit_check(X: np.ndarray, Y: np.ndarray) -> None:
   if not isinstance(X, np.ndarray):
       raise TypeError("X must be numpy array")
   if not isinstance(Y, np.ndarray):
@@ -34,7 +34,7 @@ class KNN():
   O modelo de K nearest neighbors, para um K escolhido
   """
 
-  def __init__(self, K: int, p=2, normalize=False):
+  def __init__(self, K=5: int, p=2, normalize=False):
     """
     Inicia o modelo KNN
       --------------
@@ -69,7 +69,7 @@ class KNN():
       Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
     if self.normalize:
       self.mean = X.mean(axis=0)
       self.standard = X.std(axis=0)
@@ -143,7 +143,7 @@ class Logistic_Regression():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
 
     # Usa a decida de gradiente para estimar beta
     n_samples, n_parameters = X.shape
@@ -220,7 +220,7 @@ class LDA():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
@@ -304,7 +304,7 @@ class QDA():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
@@ -404,7 +404,7 @@ class SVM():
     self.n_features = None
     self.machines = None  # Lista de (i, j, w, b): SVM binário entre as classes values[i] (-1) e values[j] (+1)
 
-  def train_binary(self, X: np.ndarray, y: np.ndarray):
+  def fit_binary(self, X: np.ndarray, y: np.ndarray):
     # Minimiza J(w,b) = 1/2 ||w||^2 + C/N Σ max(0, 1 - y_i (w^T x_i + b)). Os rótulos y são -1 ou +1.
     N, n_parameters = X.shape
     w = np.zeros(n_parameters)
@@ -433,7 +433,7 @@ class SVM():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X. Precisa conter pelo menos 2 classes.
     """
 
-    train_check(X, Y)
+    fit_check(X, Y)
 
     values = np.unique(Y)
 
@@ -445,7 +445,7 @@ class SVM():
       for j in range(i + 1, len(values)):
         pair = (Y == values[i]) | (Y == values[j]) #pega apneas as amostras das duas classes atuais
         y = np.where(Y[pair] == values[j], 1.0, -1.0) #colocando rótulos 1 e -1
-        w, b = self.train_binary(X[pair], y)
+        w, b = self.fit_binary(X[pair], y)
         machines.append((i, j, w, b))
 
     self.values = values

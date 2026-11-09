@@ -1,253 +1,127 @@
-Decision Trees — Classificação e Regressão
+# Módulo Árvores de Decisão
 
-Implementação de árvores de decisão para problemas de classificação e regressão utilizando Python e NumPy.
+Arquivo: `src/arvores_decisao.py` (apenas NumPy)
 
-O projeto implementa dois modelos:
+O módulo implementa dois modelos de árvores de decisão: classificação e regressão. Ambos utilizam divisões binárias recursivas dos dados, escolhendo a característica e o limite que minimizam uma medida de impureza ou erro.
 
-* DecisionTreeClassification: árvore de decisão para classificação, utilizando o índice de Gini.
-* DecisionTreeRegression: árvore de decisão para regressão, utilizando o erro quadrático médio (MSE).
+Para os dois modelos, consideramos `X` como a matriz de características dos exemplos e `y` como o vetor de valores associados a cada exemplo. Cada linha de `X` corresponde a um exemplo, e cada coluna representa uma característica.
 
-Ambos os modelos utilizam divisões binárias e construção recursiva da árvore.
+## *DecisionTreeClassification*
 
+### Parâmetros
+__________________________
 
-1. Dependências
+`max_depth` : Profundidade máxima permitida para a árvore. O valor padrão é 5;
 
-O projeto utiliza:
+`min_samples` : Número mínimo de exemplos necessário para que um nó possa continuar sendo dividido. O valor padrão é 2.
 
-* Python 3
-* NumPy
+Inicialmente, a árvore não possui raiz (`root = None`).
 
-Para instalar a dependência:
+### Definição
+__________________________
 
-pip install numpy
+Implementa uma árvore de decisão para problemas de classificação. O algoritmo realiza divisões binárias sucessivas dos dados, buscando separar exemplos pertencentes a classes diferentes.
 
-Importação:
+A qualidade de cada divisão é avaliada pelo índice Gini, sendo escolhida aquela que produz a menor impureza ponderada entre os dois grupos resultantes.
 
-import numpy as np
+### *DecisionTreeClassification._gini*
 
+#### Parâmetros
 
-2. Fundamentos matemáticos
+`y` : Vetor contendo as classes dos exemplos de um determinado nó.
 
-2.1. Representação dos dados
+Retorna um `float`.
 
-Os métodos de treinamento recebem dois objetos:
+#### Definição
 
-Matriz de características (X)
+Calcula o índice Gini, que mede a impureza de um conjunto de exemplos.
 
-É uma matriz bidimensional de dimensões (n \times p), em que:
+Seja $p_i$ a proporção de exemplos pertencentes à classe $i$, e $k$ o número de classes distintas presentes no conjunto.
 
-* (n) representa o número de observações;
-* (p) representa o número de características;
-* (X_{ij}) representa o valor da característica (j) na observação (i).
+$$Gini(y)=1-\sum_{i=1}^{k}p_i^2$$
 
-Cada linha representa uma observação, enquanto cada coluna representa uma característica.
+Quanto menor o índice Gini, mais homogêneo é o conjunto. Quando todos os exemplos pertencem à mesma classe, o índice é zero.
 
-Vetor de respostas (y)
+Se o vetor estiver vazio, retorna zero.
 
-É um vetor unidimensional de tamanho (n), contendo a resposta associada a cada observação.
+```python
+y = np.array([0, 0, 0, 1, 1])
 
-Na classificação, os valores representam classes. Na regressão, representam valores numéricos.
+_gini(y) # 0.48
+```
 
-2.2. Divisões binárias
+### *DecisionTreeClassification._best_division*
 
-Cada nó interno da árvore contém uma regra de decisão baseada em uma única característica:
+#### Parâmetros
 
-$$
-X_j \leq t,
-$$
+`X` : Matriz contendo as características dos exemplos;
 
-em que:
+`y` : Vetor contendo as classes dos exemplos.
 
-* (j) é o índice da característica utilizada;
-* (t) é o limite numérico escolhido pelo algoritmo.
+Retorna uma tupla `(j, limit)` ou `None`, em que `j` representa o índice da característica escolhida e `limit` representa o limite da divisão.
 
-A divisão produz dois subconjuntos:
+#### Definição
 
-$$
-D_L = {(x_i,y_i):x_{ij}\leq t},
-$$
+Busca a melhor divisão possível para os exemplos de um nó, utilizando o índice Gini ponderado como critério.
 
-$$
-D_R = {(x_i,y_i):x_{ij}>t}.
-$$
+Inicialmente, calcula a impureza Gini do conjunto original. Em seguida, percorre todas as características e testa diferentes limites de separação.
 
-As observações que satisfazem a condição seguem para o ramo esquerdo. As demais seguem para o ramo direito.
+Para cada característica, são considerados os valores distintos em ordem crescente. Os limites testados correspondem às médias entre valores consecutivos:
 
-2.3. Escolha dos limites candidatos
+$$t_i=\frac{v_i+v_{i+1}}{2}$$
 
-Para cada característica, o algoritmo identifica seus valores distintos e os organiza em ordem crescente:
+Para cada limite $t$, os exemplos são separados em dois grupos:
 
-$$
-v_1 < v_2 < \cdots < v_k.
-$$
+$$L=\{x_i\in X:x_{ij}\leq t\}$$
 
-Os limites candidatos são os pontos médios entre valores consecutivos:
+$$R=\{x_i\in X:x_{ij}>t\}$$
 
-$$
-t_i = \frac{v_i+v_{i+1}}{2}.
-$$
+A impureza da divisão é calculada pela média ponderada dos índices Gini dos dois grupos:
 
-Dessa forma, são avaliados:
+$$Gini_{\text{divisão}}=
+\frac{|L|}{n}Gini(L)+
+\frac{|R|}{n}Gini(R)$$
 
-$$
-t_1,t_2,\ldots,t_{k-1}.
-$$
+O algoritmo escolhe a divisão que apresentar o menor valor de Gini ponderado, desde que esse valor seja estritamente menor que a impureza original do conjunto.
 
-Essa estratégia considera todas as divisões distintas induzidas pela ordenação dos valores observados de uma característica numérica.
+Caso nenhuma divisão melhore a impureza, retorna `None`.
 
+### *DecisionTreeClassification._build_tree*
 
+#### Parâmetros
 
-3. Árvore de decisão para classificação
+`X` : Matriz contendo as características dos exemplos;
 
-3.1. Classe DecisionTreeClassification
+`y` : Vetor contendo as classes dos exemplos;
 
-Implementa uma árvore de decisão para problemas em que a variável resposta representa uma classe categórica.
+`depth` : Profundidade atual do nó na árvore. Seu valor inicial é zero.
 
-O critério utilizado para escolher as divisões é o índice de Gini. O objetivo é produzir subconjuntos progressivamente mais homogêneos em relação às classes.
+Retorna um dicionário que representa um nó da árvore.
 
-3.1.1. Construtor __init__
+#### Definição
 
-def __init__(self, max_depth=5, min_samples=2):
+Constrói a árvore de decisão recursivamente, utilizando `_best_division` para determinar as melhores divisões.
 
-Inicializa o modelo e define os parâmetros responsáveis por controlar o crescimento da árvore.
+Inicialmente, identifica a classe majoritária do conjunto, que será utilizada como previsão caso o nó se torne uma folha.
 
-Parâmetro	Padrão	Descrição
-max_depth	5	Profundidade máxima permitida para a árvore.
-min_samples	2	Número mínimo de observações necessário para tentar dividir um nó.
+O algoritmo interrompe a divisão quando alguma das seguintes condições é satisfeita:
 
-Atributos:
+- Todos os exemplos pertencem à mesma classe;
+- A profundidade máxima da árvore é atingida;
+- O número de exemplos é menor que `min_samples`;
+- Não existe uma divisão capaz de reduzir a impureza Gini.
 
-* self.max_depth: armazena a profundidade máxima.
-* self.min_samples: armazena o limite mínimo de observações.
-* self.root: armazena a raiz da árvore. Inicialmente, recebe None.
-* self.n_caracteristicas: inicializado com None, mas não utilizado no restante da implementação.
+Quando uma dessas condições é satisfeita, é criado um nó folha, representado por:
 
-3.1.2. Método _gini
-
-def _gini(self, y):
-
-Calcula a impureza de Gini de um conjunto de respostas.
-
-Sua definição matemática é:
-
-$$
-G(D)=1-\sum_{c=1}^{K}p_c^2,
-$$
-
-em que:
-
-* (K) é o número de classes distintas;
-* (p_c) é a proporção de observações pertencentes à classe (c).
-
-Quanto menor o índice, mais homogêneo é o conjunto.
-
-Interpretação:
-
-* (G(D)=0): todas as observações pertencem à mesma classe.
-* Valores maiores indicam maior diversidade de classes.
-* A impureza máxima ocorre quando todas as classes possuem a mesma proporção, sendo igual a:
-
-$$
-G_{\max}=1-\frac{1}{K}.
-$$
-
-Funcionamento:
-
-1. Verifica se o vetor está vazio. Caso esteja, retorna 0.0.
-2. Identifica as classes e suas frequências utilizando np.unique.
-3. Calcula a proporção de cada classe.
-4. Calcula o índice de Gini.
-
-Parâmetro:
-
-* y: vetor contendo as classes das observações.
-
-Retorno: número real correspondente à impureza de Gini.
-
-3.1.3. Método _best_division
-
-def _best_division(self, X, y):
-
-Procura a melhor divisão binária para um conjunto de observações.
-
-O critério utilizado é a impureza de Gini ponderada dos subconjuntos resultantes.
-
-Considere um conjunto (D), dividido em (D_L) e (D_R).
-
-A impureza ponderada é:
-
-$$
-G_{\text{divisão}} =
-\frac{|D_L|}{|D|}G(D_L)
-+
-\frac{|D_R|}{|D|}G(D_R).
-$$
-
-O algoritmo deseja minimizar essa quantidade.
-
-Funcionamento:
-
-1. Obtém o número de observações e características.
-2. Inicializa a melhor impureza com o Gini do conjunto original.
-3. Percorre todas as características.
-4. Calcula os limites candidatos.
-5. Para cada limite:
-    * Separa as observações em dois subconjuntos.
-    * Calcula o Gini de cada subconjunto.
-    * Calcula a impureza ponderada.
-6. Atualiza a melhor divisão caso encontre uma impureza estritamente menor.
-
-Parâmetros:
-
-* X: matriz de características.
-* y: vetor de classes correspondente.
-
-Retorno:
-
-* Uma tupla (j, limit), contendo a característica e o limite escolhidos.
-* None, caso nenhuma divisão produza redução estrita na impureza.
-
-3.1.4. Método _build_tree
-
-def _build_tree(self, X, y, depth=0):
-
-Constrói a árvore recursivamente.
-
-Primeiramente, identifica as classes presentes e suas frequências:
-
-classes, counting = np.unique(y, return_counts=True)
-class_majority = classes[np.argmax(counting)]
-
-A classe majoritária é utilizada como previsão caso o nó se torne uma folha.
-
-Condições de parada:
-
-O algoritmo interrompe a construção quando pelo menos uma das condições seguintes é satisfeita:
-
-1. Todas as observações pertencem à mesma classe:
-
-len(classes) == 1
-
-2. A profundidade máxima foi atingida:
-
-depth >= self.max_depth
-
-3. O número de observações é insuficiente:
-
-len(y) < self.min_samples
-
-Quando alguma condição é satisfeita, retorna:
-
+```python
 {"folha": True, "valor": class_majority}
+```
 
-Caso contrário, procura a melhor divisão por meio de _best_division.
+Caso contrário, são armazenados a característica e o limite escolhidos, e a função é chamada recursivamente para construir as subárvores esquerda e direita.
 
-Se nenhuma divisão válida for encontrada, o nó também se torna uma folha.
+Os nós internos são representados por:
 
-Quando uma divisão é encontrada, os dados são separados e o método é chamado recursivamente para os dois subconjuntos.
-
-A estrutura de um nó interno é:
-
+```python
 {
     "folha": False,
     "caracteristica": j,
@@ -255,749 +129,319 @@ A estrutura de um nó interno é:
     "esquerda": ...,
     "direita": ...
 }
+```
 
-Parâmetros:
+### *DecisionTreeClassification.adjust*
 
-* X: matriz de características.
-* y: vetor de classes.
-* depth: profundidade atual do nó, iniciada em zero.
+#### Parâmetros
 
-Retorno: dicionário que representa uma subárvore.
+`X` : Matriz bidimensional contendo as características dos exemplos de treinamento;
 
-3.1.5. Método adjust
+`y` : Vetor unidimensional contendo as classes correspondentes aos exemplos.
 
-def adjust(self, X, y):
+Retorna o próprio objeto da classe `DecisionTreeClassification`.
 
-Treina o modelo utilizando os dados fornecidos.
+#### Definição
 
-Parâmetros:
+Realiza o treinamento da árvore de decisão.
 
-* X: matriz bidimensional de características.
-* y: vetor unidimensional de classes.
+Inicialmente, converte `X` para uma matriz NumPy de valores reais e `y` para um vetor NumPy.
 
-Validações:
+Em seguida, verifica se os dados possuem dimensões adequadas, se possuem o mesmo número de exemplos e se não estão vazios. Também verifica se existe pelo menos uma característica.
 
-Condição	Comportamento
-X não é bidimensional	Lança ValueError.
-y não é unidimensional	Lança ValueError.
-Quantidades de observações diferentes	Lança ValueError.
-y vazio	Lança ValueError.
-Nenhuma característica em X	Lança ValueError.
+Caso alguma condição não seja satisfeita, lança um `ValueError`.
 
-A matriz X é convertida para float, enquanto y é convertido para um array NumPy sem imposição de tipo numérico.
+Por fim, chama `_build_tree` para construir a árvore e armazena o resultado no atributo `root`.
 
-Após as verificações, a árvore é construída:
+```python
+modelo = DecisionTreeClassification(max_depth=5, min_samples=2)
 
-self.root = self._build_tree(X, y)
+modelo.adjust(X_train, y_train)
+```
 
-Retorno: o próprio objeto (self), permitindo encadeamento de chamadas.
+### *DecisionTreeClassification._predict_sample*
 
-3.1.6. Método _predict_sample
+#### Parâmetros
 
-def _predict_sample(self, x, no):
+`x` : Vetor contendo as características de um único exemplo;
 
-Realiza a previsão de uma única observação percorrendo a árvore.
+`no` : Dicionário que representa o nó atual da árvore.
 
-Parâmetros:
+Retorna o valor da classe prevista para o exemplo.
 
-* x: vetor contendo as características da observação.
-* no: nó atual da árvore.
+#### Definição
 
-Funcionamento:
+Realiza a previsão de um único exemplo percorrendo a árvore recursivamente.
 
-1. Verifica se o nó atual é uma folha.
-2. Se for uma folha, retorna o valor armazenado.
-3. Caso contrário, obtém a característica e o limite da divisão.
-4. Verifica se:
+Se o nó atual for uma folha, retorna a classe armazenada em `valor`.
 
-$$
-x_j \leq t.
-$$
+Caso contrário, verifica se a característica indicada por `caracteristica` é menor ou igual ao limite armazenado em `limite`.
 
-5. Se a condição for verdadeira, percorre o ramo esquerdo.
-6. Caso contrário, percorre o ramo direito.
+Se a condição for verdadeira, continua a busca pela subárvore esquerda. Caso contrário, continua pela subárvore direita.
 
-O processo termina quando uma folha é encontrada.
+O processo se repete até que uma folha seja encontrada.
 
-Retorno: classe prevista para a observação.
+### *DecisionTreeClassification.predict*
 
-3.1.7. Método predict
+#### Parâmetros
 
-def predict(self, X):
+`X` : Matriz bidimensional contendo as características dos exemplos que serão classificados.
 
-Realiza previsões para um conjunto de observações.
+Retorna um `np.ndarray` contendo as classes previstas.
 
-Parâmetro:
+#### Definição
 
-* X: matriz bidimensional contendo as observações que serão classificadas.
+Realiza a previsão das classes para todos os exemplos de uma matriz.
 
-Funcionamento:
+Inicialmente, verifica se a árvore foi treinada, ou seja, se o atributo `root` não está vazio. Também verifica se `X` é bidimensional.
 
-1. Verifica se o modelo já foi treinado.
-2. Converte X para um array NumPy de tipo float.
-3. Verifica se a matriz é bidimensional.
-4. Percorre cada observação e aplica _predict_sample.
-5. Armazena os resultados em um array NumPy.
+Em seguida, utiliza `_predict_sample` para realizar a previsão individual de cada exemplo, retornando um vetor NumPy com os resultados.
 
-Retorno: array unidimensional contendo as classes previstas.
+```python
+modelo = DecisionTreeClassification()
+modelo.adjust(X_train, y_train)
 
-Exceções:
+previsoes = modelo.predict(X_test)
+```
 
-* ValueError: quando a árvore ainda não foi treinada.
-* ValueError: quando X não é bidimensional.
+---
 
-⸻
+## *DecisionTreeRegression*
 
-4. Árvore de decisão para regressão
+### Parâmetros
+__________________________
 
-4.1. Classe DecisionTreeRegression
+`max_depth` : Profundidade máxima permitida para a árvore. O valor padrão é 5;
 
-Implementa uma árvore de decisão para problemas em que a variável resposta é numérica.
+`min_samples` : Número mínimo de exemplos necessário para que um nó possa continuar sendo dividido. O valor padrão é 2.
 
-O critério utilizado para escolher as divisões é o erro quadrático médio (MSE).
+Inicialmente, a árvore não possui raiz (`root = None`).
 
-O objetivo é produzir subconjuntos cujas respostas apresentem baixa variabilidade.
+### Definição
+__________________________
 
-4.1.1. Construtor __init__
+Implementa uma árvore de decisão para problemas de regressão. Assim como na classificação, o algoritmo realiza divisões binárias sucessivas dos dados, buscando formar grupos com valores de saída semelhantes.
 
-def __init__(self, max_depth=5, min_samples=2):
+A qualidade de cada divisão é avaliada pelo erro quadrático médio (MSE), sendo escolhida aquela que produz o menor erro ponderado entre os dois grupos resultantes.
 
-Inicializa o modelo de regressão.
+### *DecisionTreeRegression._mse*
 
-Parâmetro	Padrão	Descrição
-max_depth	5	Profundidade máxima permitida para a árvore.
-min_samples	2	Número mínimo de observações necessário para tentar dividir um nó.
+#### Parâmetros
 
-Atributos:
+`y` : Vetor contendo os valores numéricos associados aos exemplos de um determinado nó.
 
-* self.max_depth: profundidade máxima.
-* self.min_samples: número mínimo de observações para tentar uma divisão.
-* self.root: raiz da árvore, inicialmente definida como None.
+Retorna um `float`.
 
-4.1.2. Método _mse
+#### Definição
 
-def _mse(self, y):
+Calcula o erro quadrático médio dos valores em relação à sua média.
 
-Calcula o erro quadrático médio em relação à média dos valores de resposta.
+Seja $\bar y$ a média dos valores do vetor:
 
-Sua definição é:
+$$\bar y=\frac{1}{n}\sum_{i=1}^{n}y_i$$
 
-$$
-MSE(D)=\frac{1}{n}
-\sum_{i=1}^{n}(y_i-\bar y)^2,
-$$
+O MSE é definido por:
 
-em que:
+$$MSE(y)=\frac{1}{n}\sum_{i=1}^{n}(y_i-\bar y)^2$$
 
-$$
-\bar y=\frac{1}{n}\sum_{i=1}^{n}y_i.
-$$
+Quanto menor o MSE, menor a dispersão dos valores em torno da média. Quando todos os valores são iguais, o MSE é zero.
 
-A média é utilizada porque é o valor constante que minimiza a soma dos erros quadráticos:
+Se o vetor estiver vazio, retorna zero.
 
-$$
-\bar y =
-\underset{a\in\mathbb R}{\arg\min}
-\sum_{i=1}^{n}(y_i-a)^2.
-$$
+```python
+y = np.array([2, 4, 6])
 
-Assim, caso um conjunto seja representado por uma única previsão constante, a melhor escolha sob perda quadrática é sua média.
+_mse(y) # 2.666...
+```
 
-Funcionamento:
+### *DecisionTreeRegression._best_division*
 
-1. Verifica se o vetor está vazio. Caso esteja, retorna 0.0.
-2. Calcula a média de y.
-3. Calcula a média dos quadrados dos desvios em relação à média.
+#### Parâmetros
 
-Parâmetro:
+`X` : Matriz contendo as características dos exemplos;
 
-* y: vetor de valores numéricos.
+`y` : Vetor contendo os valores numéricos associados aos exemplos.
 
-Retorno: número real correspondente ao erro quadrático médio.
+Retorna uma tupla `(j, limit)` ou `None`, em que `j` representa o índice da característica escolhida e `limit` representa o limite da divisão.
 
-4.1.3. Método _best_division
+#### Definição
 
-def _best_division(self, X, y):
+Busca a melhor divisão possível para os exemplos de um nó, utilizando o MSE ponderado como critério.
 
-Procura a divisão que minimiza o MSE ponderado dos subconjuntos resultantes.
+O algoritmo percorre todas as características e testa os limites correspondentes às médias entre valores consecutivos distintos de cada característica:
 
-Para uma divisão em dois grupos:
+$$t_i=\frac{v_i+v_{i+1}}{2}$$
 
-$$
-MSE_{\text{divisão}} =
-\frac{|D_L|}{|D|}MSE(D_L)
-+
-\frac{|D_R|}{|D|}MSE(D_R).
-$$
+Para cada limite, os exemplos são separados em dois grupos:
 
-Funcionamento:
+$$L=\{x_i\in X:x_{ij}\leq t\}$$
 
-1. Obtém o número de observações e características.
-2. Inicializa o melhor erro com o MSE do conjunto original.
-3. Percorre todas as características.
-4. Identifica os valores distintos de cada característica.
-5. Calcula os pontos médios entre valores consecutivos.
-6. Avalia cada limite:
-    * Separa as observações em dois subconjuntos.
-    * Calcula o MSE de cada subconjunto.
-    * Calcula o MSE ponderado da divisão.
-7. Atualiza a melhor divisão quando encontra um erro estritamente menor.
+$$R=\{x_i\in X:x_{ij}>t\}$$
 
-Parâmetros:
+A qualidade da divisão é calculada pela média ponderada dos erros quadráticos médios dos dois grupos:
 
-* X: matriz de características.
-* y: vetor numérico de respostas.
+$$MSE_{\text{divisão}}=
+\frac{|L|}{n}MSE(L)+
+\frac{|R|}{n}MSE(R)$$
 
-Retorno:
+O algoritmo escolhe a divisão que apresentar o menor erro ponderado, desde que esse valor seja estritamente menor que o erro original do conjunto.
 
-* Uma tupla (j, limit), contendo a característica e o limite escolhidos.
-* None, caso nenhuma divisão melhore estritamente o erro do conjunto original.
+Caso nenhuma divisão melhore o erro, retorna `None`.
 
-4.1.4. Método _build_tree
+### *DecisionTreeRegression._build_tree*
 
-def _build_tree(self, X, y, depth=0):
+#### Parâmetros
 
-Constrói a árvore de regressão recursivamente.
+`X` : Matriz contendo as características dos exemplos;
 
-Diferentemente da classificação, o valor armazenado em cada folha é a média das respostas do conjunto associado ao nó:
+`y` : Vetor contendo os valores numéricos associados aos exemplos;
 
-mean = float(np.mean(y))
+`depth` : Profundidade atual do nó na árvore. Seu valor inicial é zero.
 
-Essa escolha minimiza o erro quadrático dentro da folha.
+Retorna um dicionário que representa um nó da árvore.
 
-Condições de parada:
+#### Definição
 
-1. A profundidade máxima foi atingida:
+Constrói a árvore de decisão recursivamente, utilizando `_best_division` para determinar as melhores divisões.
 
-depth >= self.max_depth
+Inicialmente, calcula a média dos valores de `y`, que será utilizada como previsão caso o nó se torne uma folha.
 
-2. O número de observações é insuficiente:
+O algoritmo interrompe a divisão quando alguma das seguintes condições é satisfeita:
 
-len(y) < self.min_samples
+- A profundidade máxima da árvore é atingida;
+- O número de exemplos é menor que `min_samples`;
+- Todos os valores de `y` são iguais;
+- Não existe uma divisão capaz de reduzir o MSE.
 
-3. Todos os valores de resposta são iguais:
+Quando uma dessas condições é satisfeita, é criado um nó folha, representado por:
 
-np.all(y == y[0])
-
-Quando alguma condição é satisfeita, retorna:
-
+```python
 {"folha": True, "valor": mean}
+```
 
-Caso contrário, procura a melhor divisão utilizando _best_division.
+Caso contrário, são armazenados a característica e o limite escolhidos, e a função é chamada recursivamente para construir as subárvores esquerda e direita.
 
-Se nenhuma divisão for encontrada, o nó também se torna uma folha.
+Os nós internos possuem a mesma estrutura utilizada na árvore de classificação.
 
-Se existir uma divisão válida, os dados são separados e as duas subárvores são construídas recursivamente.
+### *DecisionTreeRegression.adjust*
 
-Parâmetros:
+#### Parâmetros
 
-* X: matriz de características.
-* y: vetor de respostas numéricas.
-* depth: profundidade atual do nó, iniciada em zero.
+`X` : Matriz bidimensional contendo as características dos exemplos de treinamento;
 
-Retorno: dicionário que representa uma subárvore.
+`y` : Vetor unidimensional contendo os valores numéricos correspondentes aos exemplos.
 
-4.1.5. Método adjust
+Retorna o próprio objeto da classe `DecisionTreeRegression`.
 
-def adjust(self, X, y):
+#### Definição
 
-Treina a árvore de regressão utilizando os dados fornecidos.
+Realiza o treinamento da árvore de decisão.
 
-Parâmetros:
+Inicialmente, converte `X` e `y` para arrays NumPy de valores reais.
 
-* X: matriz bidimensional de características.
-* y: vetor unidimensional de respostas numéricas.
+Em seguida, verifica se os dados possuem dimensões adequadas, se possuem o mesmo número de exemplos e se não estão vazios. Também verifica se existe pelo menos uma característica.
 
-Validações:
+Caso alguma condição não seja satisfeita, lança um `ValueError`.
 
-Condição	Comportamento
-X não é bidimensional	Lança ValueError.
-y não é unidimensional	Lança ValueError.
-Quantidades de observações diferentes	Lança ValueError.
-y vazio	Lança ValueError.
-Nenhuma característica em X	Lança ValueError.
+Por fim, chama `_build_tree` para construir a árvore e armazena o resultado no atributo `root`.
 
-Os dados são convertidos para arrays NumPy de tipo float.
+```python
+modelo = DecisionTreeRegression(max_depth=5, min_samples=2)
 
-Após as verificações, a árvore é construída:
+modelo.adjust(X_train, y_train)
+```
 
-self.root = self._build_tree(X, y)
+### *DecisionTreeRegression._predict_sample*
 
-Retorno: o próprio objeto (self).
+#### Parâmetros
 
-4.1.6. Método _predict_sample
+`x` : Vetor contendo as características de um único exemplo;
 
-def _predict_sample(self, x, no):
+`no` : Dicionário que representa o nó atual da árvore.
 
-Realiza a previsão de uma observação percorrendo a árvore de regressão.
+Retorna o valor numérico previsto para o exemplo.
 
-Parâmetros:
+#### Definição
 
-* x: vetor de características da observação.
-* no: nó atual da árvore.
+Realiza a previsão de um único exemplo percorrendo a árvore recursivamente.
 
-Funcionamento:
+Se o nó atual for uma folha, retorna a média armazenada em `valor`.
 
-1. Se o nó for uma folha, retorna o valor numérico armazenado.
-2. Caso contrário, obtém a característica e o limite da divisão.
-3. Verifica se:
+Caso contrário, verifica se a característica indicada por `caracteristica` é menor ou igual ao limite armazenado em `limite`.
 
-$$
-x_j \leq t.
-$$
+Se a condição for verdadeira, continua a busca pela subárvore esquerda. Caso contrário, continua pela subárvore direita.
 
-4. Se a condição for verdadeira, percorre o ramo esquerdo.
-5. Caso contrário, percorre o ramo direito.
+O processo se repete até que uma folha seja encontrada.
 
-Retorno: número real correspondente à previsão.
+### *DecisionTreeRegression.predict*
 
-4.1.7. Método predict
+#### Parâmetros
 
-def predict(self, X):
+`X` : Matriz bidimensional contendo as características dos exemplos que serão utilizados para realizar as previsões.
 
-Realiza previsões para um conjunto de observações.
+Retorna um `np.ndarray` contendo os valores numéricos previstos.
 
-Parâmetro:
+#### Definição
 
-* X: matriz bidimensional contendo as observações para as quais serão produzidas previsões.
+Realiza a previsão dos valores para todos os exemplos de uma matriz.
 
-Funcionamento:
+Inicialmente, verifica se a árvore foi treinada, ou seja, se o atributo `root` não está vazio. Também verifica se `X` é bidimensional e se possui pelo menos uma característica.
 
-1. Verifica se o modelo já foi treinado.
-2. Converte X para um array NumPy de tipo float.
-3. Verifica se a matriz é bidimensional.
-4. Verifica se existe pelo menos uma característica.
-5. Percorre as observações e aplica _predict_sample.
-6. Converte as previsões em um array NumPy.
+Em seguida, utiliza `_predict_sample` para realizar a previsão individual de cada exemplo, retornando um vetor NumPy com os resultados.
 
-Retorno: array unidimensional contendo os valores previstos.
+```python
+modelo = DecisionTreeRegression()
+modelo.adjust(X_train, y_train)
 
-Exceções:
+previsoes = modelo.predict(X_test)
+```
 
-* ValueError: quando a árvore ainda não foi treinada.
-* ValueError: quando X não é bidimensional.
-* ValueError: quando X não possui características.
+---
 
-⸻
+## Exemplos de utilização
 
-5. Funcionamento matemático geral
+### Classificação
 
-5.1. Impureza do nó e dos filhos
-
-Considere um nó com impureza (I(D)).
-
-Após uma divisão, surgem dois subconjuntos, (D_L) e (D_R).
-
-A impureza resultante é:
-
-$$
-I_{\text{filhos}} =
-\frac{|D_L|}{|D|}I(D_L)
-+
-\frac{|D_R|}{|D|}I(D_R).
-$$
-
-A redução de impureza é:
-
-$$
-\Delta I =
-I(D)-I_{\text{filhos}}.
-$$
-
-Como o código compara a impureza ponderada dos filhos com a impureza do pai, uma divisão somente é aceita quando:
-
-$$
-\Delta I>0.
-$$
-
-Em outras palavras, uma divisão precisa melhorar estritamente o critério utilizado.
-
-5.2. Diferenças entre classificação e regressão
-
-Característica	Classificação	Regressão
-Critério	Gini	MSE
-Objetivo	Reduzir a heterogeneidade das classes	Reduzir a variabilidade das respostas
-Valor armazenado na folha	Classe majoritária	Média das respostas
-Tipo de previsão	Categórica	Numérica
-
-⸻
-
-6. Estrutura interna da árvore
-
-A árvore é armazenada utilizando dicionários Python.
-
-Existem dois tipos de nós.
-
-6.1. Nó folha
-
-Uma folha representa o resultado final de uma observação que percorreu a árvore.
-
-Na classificação:
-
-{"folha": True, "valor": class_majority}
-
-Na regressão:
-
-{"folha": True, "valor": mean}
-
-O campo valor contém a previsão associada à folha.
-
-6.2. Nó interno
-
-Um nó interno contém uma regra de divisão e referências para as duas subárvores:
-
-{
-    "folha": False,
-    "caracteristica": j,
-    "limite": limit,
-    "esquerda": ...,
-    "direita": ...
-}
-
-Os campos possuem os seguintes significados:
-
-* folha: indica se o nó é terminal.
-* caracteristica: índice da variável utilizada na divisão.
-* limite: valor numérico utilizado como limiar.
-* esquerda: subárvore das observações que satisfazem a condição.
-* direita: subárvore das observações que não satisfazem a condição.
-
-Os índices das características começam em zero.
-
-⸻
-
-7. Parâmetros de controle do crescimento
-
-As duas classes utilizam os mesmos parâmetros.
-
-7.1. max_depth
-
-Controla a profundidade máxima da árvore.
-
-A raiz possui profundidade zero. Cada divisão aumenta a profundidade dos nós filhos em uma unidade.
-
-Para max_depth=5, por exemplo:
-
-* A raiz está no nível 0.
-* Seus filhos estão no nível 1.
-* Os filhos seguintes estão no nível 2.
-* A profundidade máxima dos nós é 5.
-
-Os nós que atingem profundidade 5 tornam-se folhas.
-
-Diminuir esse parâmetro restringe o crescimento da árvore e pode reduzir sua complexidade.
-
-Aumentá-lo permite regras de decisão mais detalhadas, mas pode favorecer o ajuste excessivo aos dados de treinamento.
-
-## 7.2. `min_samples`
-
-Controla a quantidade mínima de observações necessária para que o algoritmo tente dividir um nó.
-
-A condição implementada no código é:
-
-$$
-n_{\text{nó}} < \text{min\_samples}
-$$
-
-Portanto, uma divisão ainda pode ser tentada quando:
-
-$$
-n_{\text{nó}} = \text{min\_samples}
-$$
-
-**Importante:** esse parâmetro não impõe uma quantidade mínima de observações em cada folha. O código não verifica o tamanho dos filhos antes de aceitar uma divisão. Assim, uma folha pode terminar contendo apenas uma observação.
-
-8. Exemplos de utilização
-
-8.1. Classificação
-
-O bloco principal do código cria um conjunto de dados com três características e três classes.
-
+```python
 X_train = np.array([
-    [1.0, 1.0, 1.5],
-    [1.5, 2.0, 1.0],
-    [2.0, 1.0, 2.0],
-    [7.0, 1.0, 7.0],
-    [7.5, 2.0, 8.0],
-    [8.0, 1.0, 7.5],
-    [4.0, 7.0, 4.0],
-    [4.5, 8.0, 5.0],
-    [5.0, 7.0, 4.5]
+    [1.0, 1.0],
+    [1.5, 2.0],
+    [7.0, 1.0],
+    [7.5, 2.0]
 ])
-y_train = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
 
-O modelo é instanciado e treinado:
+y_train = np.array([0, 0, 1, 1])
+
+X_test = np.array([
+    [1.8, 1.5],
+    [7.8, 1.5]
+])
 
 modelo = DecisionTreeClassification()
 modelo.adjust(X_train, y_train)
 
-Em seguida, são fornecidas novas observações:
+previsoes = modelo.predict(X_test)
+```
+
+### Regressão
+
+```python
+X_train = np.array([
+    [1.0, 1.0],
+    [2.0, 1.0],
+    [3.0, 2.0],
+    [4.0, 3.0]
+])
+
+y_train = np.array([4.0, 5.0, 7.0, 9.0])
 
 X_test = np.array([
-    [1.8, 1.5, 1.5],
-    [7.8, 1.5, 7.5],
-    [4.5, 7.5, 4.5]
+    [1.5, 1.0],
+    [3.5, 2.5]
 ])
+
+modelo = DecisionTreeRegression()
+modelo.adjust(X_train, y_train)
+
 previsoes = modelo.predict(X_test)
-
-As previsões são comparadas com as respostas reais:
-
-y_test = np.array([0, 1, 2])
-acuracia = np.mean(previsoes == y_test)
-
-A acurácia é calculada por:
-
-$$
-\text{Acurácia} =
-\frac{\text{Número de previsões corretas}}
-{\text{Número total de previsões}}.
-$$
-
-Ela representa a proporção de observações classificadas corretamente.
-
-8.2. Regressão
-
-O conjunto de treinamento contém três características e uma resposta numérica:
-
-X_train_reg = np.array([
-    [1.0, 1.0, 1.0],
-    [2.0, 1.0, 2.0],
-    [1.0, 2.0, 2.0],
-    [3.0, 2.0, 1.0],
-    [2.0, 3.0, 1.0],
-    [3.0, 3.0, 2.0]
-])
-y_train_reg = np.array([4.0, 5.0, 5.0, 7.0, 9.0, 10.0])
-
-O modelo é criado e treinado:
-
-modelo_reg = DecisionTreeRegression()
-modelo_reg.adjust(X_train_reg, y_train_reg)
-
-Novas observações são utilizadas para previsão:
-
-X_test_reg = np.array([
-    [1.5, 1.5, 1.5],
-    [2.5, 2.0, 1.5]
-])
-previsoes_reg = modelo_reg.predict(X_test_reg)
-
-O código compara as previsões com os valores reais utilizando o erro absoluto médio (MAE):
-
-$$
-MAE =
-\frac{1}{n}
-\sum_{i=1}^{n}|\hat y_i-y_i|.
-$$
-
-Esse indicador representa o erro absoluto médio das previsões e é expresso na mesma unidade da variável resposta.
-
-
-9. Limitações da implementação
-
-A implementação apresenta algumas simplificações que devem ser consideradas antes de utilizá-la em aplicações mais gerais.
-
-9.1. Características exclusivamente numéricas
-
-A matriz X é convertida para o tipo float.
-
-Consequentemente, as características devem ser representadas numericamente. Variáveis categóricas precisam ser codificadas previamente.
-
-9.2. Ausência de tratamento de valores ausentes
-
-O código não implementa uma estratégia específica para lidar com valores NaN.
-
-A presença desses valores pode comprometer a geração dos limites candidatos e a separação das observações.
-
-Recomenda-se tratar valores ausentes antes do treinamento e da previsão.
-
-9.3. Ausência de poda
-
-A árvore não realiza poda (pruning).
-
-Depois que os critérios de parada são satisfeitos, a estrutura construída é mantida integralmente.
-
-Não existe um procedimento posterior para remover divisões que tenham pouca capacidade de generalização.
-
-9.4. Ausência de restrição ao tamanho dos filhos
-
-O parâmetro min_samples controla apenas se o nó atual pode tentar uma divisão.
-
-Não existe uma restrição que exija determinado número mínimo de observações nos dois filhos.
-
-Isso permite divisões que produzem folhas muito pequenas.
-
-9.5. Ausência de validação do número de características na previsão
-
-Os métodos predict verificam se a entrada é bidimensional, mas não verificam se a quantidade de características corresponde à utilizada no treinamento.
-
-Caso uma observação tenha menos características do que a árvore exige, a previsão pode produzir um erro de índice.
-
-Caso possua características adicionais, elas podem simplesmente ser ignoradas.
-
-Uma versão mais robusta deveria armazenar o número de características durante o treinamento e compará-lo com X.shape[1] durante a previsão.
-
-9.6. Ausência de validação dos hiperparâmetros
-
-Os construtores não verificam se max_depth e min_samples possuem valores válidos.
-
-Por exemplo, valores negativos podem produzir comportamentos inesperados.
-
-9.7. Critério de desempate na classificação
-
-Quando duas ou mais classes possuem a mesma frequência em um nó, o método:
-
-np.argmax(counting)
-
-seleciona a primeira frequência máxima.
-
-Como np.unique organiza os valores distintos, o desempate normalmente favorece a primeira classe na ordenação utilizada pelo NumPy.
-
-Portanto, o resultado de um empate não é escolhido aleatoriamente.
-
-9.8. Busca exaustiva por divisões
-
-Para cada nó, o algoritmo percorre todas as características e avalia os limites candidatos gerados a partir dos valores distintos.
-
-Cada candidato exige a construção de máscaras e o recálculo da impureza dos subconjuntos.
-
-Essa estratégia é simples e adequada para fins didáticos, mas pode ser custosa para conjuntos grandes.
-
-A implementação não utiliza estruturas otimizadas de ordenação incremental ou cálculo acumulado das estatísticas.
-
-9.9. Ausência de pesos e aleatoriedade
-
-O código não implementa:
-
-* Pesos individuais para as observações.
-* Pesos para as classes.
-* Seleção aleatória de características.
-* Seleção aleatória de observações.
-* Floresta aleatória (Random Forest).
-* Critérios alternativos de divisão.
-
-Cada divisão é determinada de maneira determinística a partir dos dados e dos parâmetros, ressalvadas situações em que existam empates entre candidatos.
-
-
-10. Complexidade computacional
-
-Considere:
-
-* (n): número de observações.
-* (p): número de características.
-* (d): profundidade máxima da árvore.
-
-Em um nó com (m) observações, uma característica pode gerar até (m-1) limites candidatos.
-
-Para cada candidato, o algoritmo constrói máscaras e calcula as impurezas dos subconjuntos, operações que podem exigir tempo proporcional a (m).
-
-Portanto, uma estimativa para o custo da busca por divisões em um único nó é:
-
-$$
-O(pm^2).
-$$
-
-Na implementação atual, uma árvore muito desbalanceada pode apresentar custo acumulado de ordem:
-
-$$
-O(pn^3),
-$$
-
-em um cenário extremo no qual os tamanhos dos nós diminuem aproximadamente uma observação por nível.
-
-Em árvores mais equilibradas, o custo total pode ficar próximo de:
-
-$$
-O(pn^2).
-$$
-
-Essas estimativas são referentes à estratégia de busca implementada e não devem ser confundidas com a complexidade de versões otimizadas de árvores de decisão.
-
-
-11. Diferenças em relação a bibliotecas convencionais
-
-A implementação apresenta uma API própria:
-
-* adjust: realiza o treinamento.
-* predict: realiza as previsões.
-
-Em bibliotecas como Scikit-learn, é comum utilizar os métodos fit e predict.
-
-Além disso, a implementação não disponibiliza diretamente:
-
-* predict_proba para classificação.
-* score para avaliação automática.
-* Exportação gráfica da árvore.
-* Importância das características.
-* Poda da árvore.
-* Validação cruzada.
-* Seleção automática de hiperparâmetros.
-
-Essas funcionalidades não fazem parte do código apresentado.
-
-
-12. Referência rápida da API
-
-DecisionTreeClassification
-
-Método	Finalidade	Retorno
-__init__(max_depth=5, min_samples=2)	Inicializa o classificador.	Nenhum retorno explícito.
-_gini(y)	Calcula a impureza de Gini.	Número real.
-_best_division(X, y)	Encontra a melhor divisão segundo o Gini.	Tupla (j, limite) ou None.
-_build_tree(X, y, depth=0)	Constrói a árvore recursivamente.	Dicionário.
-adjust(X, y)	Treina o modelo.	self.
-_predict_sample(x, no)	Prevê a classe de uma observação.	Classe.
-predict(X)	Prevê as classes de várias observações.	Array NumPy.
-
-DecisionTreeRegression
-
-Método	Finalidade	Retorno
-__init__(max_depth=5, min_samples=2)	Inicializa o regressor.	Nenhum retorno explícito.
-_mse(y)	Calcula o erro quadrático médio.	Número real.
-_best_division(X, y)	Encontra a melhor divisão segundo o MSE.	Tupla (j, limite) ou None.
-_build_tree(X, y, depth=0)	Constrói a árvore recursivamente.	Dicionário.
-adjust(X, y)	Treina o modelo.	self.
-_predict_sample(x, no)	Prevê o valor de uma observação.	Número real.
-predict(X)	Prevê os valores de várias observações.	Array NumPy.
-
-
-13. Execução do módulo
-
-O trecho:
-
-if __name__ == "__main__":
-
-garante que os exemplos de classificação e regressão sejam executados somente quando o arquivo for executado diretamente.
-
-Se o arquivo for importado por outro módulo, esse bloco não será executado automaticamente.
-
-Exemplo:
-
-from decision_tree import (
-    DecisionTreeClassification,
-    DecisionTreeRegression
-)
-
-A partir daí, as classes podem ser instanciadas e utilizadas normalmente.
-
-
-14. Conclusão
-
-O código implementa duas árvores de decisão binárias construídas recursivamente.
-
-Ambas seguem o mesmo princípio:
-
-1. Considerar as características disponíveis.
-2. Gerar limites candidatos entre valores consecutivos.
-3. Avaliar a qualidade de cada divisão.
-4. Selecionar a divisão que mais reduz a impureza.
-5. Construir duas subárvores recursivamente.
-6. Interromper o processo quando uma condição de parada for atingida.
-7. Utilizar o valor armazenado nas folhas para produzir previsões.
-
-A diferença central está na função objetivo:
-
-* Na classificação, utiliza-se o índice de Gini e a classe majoritária.
-* Na regressão, utiliza-se o erro quadrático médio e a média das respostas.
-
-A implementação constitui uma versão didática e funcional de árvores de decisão, permitindo estudar diretamente a relação entre critérios matemáticos de divisão, construção recursiva de estruturas e produção de previsões.
+```
