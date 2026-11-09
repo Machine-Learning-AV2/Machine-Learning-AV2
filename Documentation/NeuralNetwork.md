@@ -111,7 +111,7 @@ path str : Caminho na qual o arquivo deve ficar salvo
 
 ## *NeuralNetwork.load_neural_network*
 ```python
-NeuralNetwork.NeuralNetwork.load(path)
+nn = NeuralNetwork.load_neural_network(path)
 ```
 
 Carrega o estado de uma rede neural, le: layers, activate functions, weight e bias
