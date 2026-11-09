@@ -34,7 +34,7 @@ class KNN():
   O modelo de K nearest neighbors, para um K escolhido
   """
 
-  def __init__(self, K=5: int, p=2, normalize=False):
+  def __init__(self, K: int = 5, p=2, normalize=False):
     """
     Inicia o modelo KNN
       --------------
@@ -379,7 +379,7 @@ class SVM():
   O modelo de Support Vector Machine linear com margem flexível, treinado por descida do subgradiente no primal.
   Com mais de duas classes, usa a estratégia um-contra-um (one-vs-one).
   """
-  def __init__(self, C: float, learning_rate: float = 0.01, max_iterations: int = 1000):
+  def __init__(self, C: float = 1, learning_rate: float = 0.01, max_iterations: int = 1000):
     """
     Inicia o modelo SVM
 
