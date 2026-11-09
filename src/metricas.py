@@ -34,7 +34,7 @@ def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([])
     ---------
     >>> x = np.array([1, 2, 4])
     >>> y = np.array([1, 3, 5])
-    >>> loss(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2) = 2
+    >>> loss(x, y, 2) # Retorna (|1-1|**2 + |3-2|**2 + |5-4|**2) = 2
     >>> l = np.array([2, 3, 2]) # O peso em classificar x = 2 enquanto y = 3 é 2
     >>> loss(x, y, 'ind', l, 3) # Classificar errado nos demais casos tem peso 3"""
     
@@ -170,8 +170,6 @@ def empirical_risk(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np
     else:
         raise TypeError('Método não implementado')
 
-def classification_error(x: np.ndarray, y: np.ndarray) -> float:
-    return empirical_risk(x, y, 'ind')
 
 # (Mean Absolute Error - Erro Absoluto Médio)
 def MAE(x:np.ndarray, y:np.ndarray) -> float:
@@ -215,7 +213,7 @@ def RMSE(x:np.ndarray, y:np.ndarray) -> float:
 # (Total Sum of Squares) - Soma dos Quadrados Total
 def TSS(x:np.ndarray) -> float:
 
-    """Retorna a soma de |x_i - (média de x)|^2 para todo x_i em x
+    """Retorna a soma de (x_i - (média de x))^2 para todo x_i em x
     
     Parâmetros
     -----------
@@ -223,7 +221,9 @@ def TSS(x:np.ndarray) -> float:
 
     if not np.issubdtype(x.dtype, np.number):
         raise TypeError('O vetor deve conter dados numéricos')
-    return float(np.sum((x-x.mean())**2))
+    
+    media = x.mean()
+    return float(np.sum((x-media)**2))
 
 
 # (R^2) - R-Quadrado
@@ -239,47 +239,6 @@ def R2(x:np.ndarray, y:np.ndarray) -> float:
     RSS_ = RSS(x, y)
     tss_ = TSS(y)
     return 1 - (RSS_/tss_)
-
-
-# Norma Lp de um vetor
-def norm_lp(x:np.ndarray, p:float) -> float:
-
-    """Retorna a norma L_p de um vetor
-    
-    Parâmetros
-    -----------
-    x : Vetor que contém valores numéricos;
-    p : Parâmetro que define a norma."""
-
-    if not isinstance(x, np.ndarray):
-        raise TypeError('O vetor deve ser um array numpy')
-    if not np.issubdtype(x.dtype, np.number):
-        raise TypeError('O vetor deve conter dados numéricos para a norma')
-    if isinstance(p, (float, int)):
-        if p < 1:
-            raise ValueError('O valor do parâmetro deve ser maior ou igual a 1')
-        if p < float('inf'):
-            return float(np.sum(np.abs(x)**p)**(1/p))
-        else:
-            return float(np.abs(x).max())
-    else:
-        raise TypeError('O parâmetro deve ser um dado numérico (>=1)')
-
-
-# Distância entre dois vetores baseada na norma Lp
-def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
-
-    """Retorna a distância entre dois vetores usando a norma L_p
-    
-    Parâmetros
-    -----------
-    x : Vetor que contém valores numéricos;
-    y : Vetor que contém valores numéricos;
-    p : Parâmetro que define a norma."""
-
-    if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
-        raise TypeError('Os vetores devem conter dados numéricos para a norma')
-    return norm_lp(y-x, p)
 
 
 # Derivada do risco empírico para calcular a descida de gradiente
@@ -325,6 +284,7 @@ def dif_empirical_risk(x: np.ndarray, y:np.ndarray, p:float, tol:float = 1e-9) -
                 raise ValueError('O parâmetro deve ser maior ou igual a 1')
         else:
             raise ValueError('O parâmetro deve ser um valor finito')
+
     elif p == 'log':
         n, *m = x.shape
         return -y/(x*n)
@@ -356,3 +316,44 @@ def DMSE(x:np.ndarray, y:np.ndarray) -> float:
     y : Vetor que contém os valores observados nos seus dados."""
 
     return dif_empirical_risk(x, y, 2)
+
+
+# Norma Lp de um vetor
+def norm_lp(x:np.ndarray, p:float) -> float:
+
+    """Retorna a norma L_p de um vetor
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém valores numéricos;
+    p : Parâmetro que define a norma."""
+
+    if not isinstance(x, np.ndarray):
+        raise TypeError('O vetor deve ser um array numpy')
+    if not np.issubdtype(x.dtype, np.number):
+        raise TypeError('O vetor deve conter dados numéricos para a norma')
+    if isinstance(p, (float, int)):
+        if p < 1:
+            raise ValueError('O valor do parâmetro deve ser maior ou igual a 1')
+        if p < float('inf'):
+            return float(np.sum(np.abs(x)**p)**(1/p))
+        else:
+            return float(np.abs(x).max())
+    else:
+        raise TypeError('O parâmetro deve ser um dado numérico (>=1)')
+
+
+# Distância entre dois vetores baseada na norma Lp
+def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
+
+    """Retorna a distância entre dois vetores usando a norma L_p
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém valores numéricos;
+    y : Vetor que contém valores numéricos;
+    p : Parâmetro que define a norma."""
+
+    if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
+        raise TypeError('Os vetores devem conter dados numéricos para a norma')
+    return norm_lp(y-x, p)
