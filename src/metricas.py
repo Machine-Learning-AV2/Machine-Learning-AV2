@@ -63,7 +63,8 @@ def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([])
     elif p == 'ind':
         soma = 0
         l_x = [i[0] for i in l]
-        for i in range(x.size):
+        n, *m = x.shape
+        for i in range(n):
             if x[i] != y[i]:
                 if x[i] in l_x:
                     indxs = [indx for indx, x_ in enumerate(l_x) if x_ == x[i]]
@@ -155,12 +156,12 @@ def empirical_risk(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np
 
     if isinstance(p, (int, float)):
         if p < float('inf'):
-            n = x.size
+            n, *m = x.shape
             return loss(x, y, p, l, subs) / n
         else:
             raise ValueError('O parâmetro deve ser um valor finito')
     elif p == 'ind':
-        n = x.size
+        n, *m = x.shape
         return loss(x, y, p, l, subs) / n
     elif p == 'log':
         n, *m = x.shape
