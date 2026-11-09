@@ -413,3 +413,126 @@ $$\text{dist}(x, y, p) = \left(\sum_{i=1}^n|x_i-y_i|^p\right)^\frac{1}{p}$$
 ``` python
 dist(x, y, p) == norm_lp(y-x, p)
 ```
+
+## *metricas.erros*
+
+### Parâmetros
+__________________________
+
+`x` : Vetor que contém os valores previstos pelo seu modelo;
+
+`y` : Vetor que contém os valores observados nos seus dados.
+
+Retorna um `tuple`
+
+### Definição
+__________________________
+
+Essa função calcula o número de verdadeiros positivos, verdadeiros negativos, e falsos positivos (Tipo I) e falsos negativos (Tipo II).
+
+$$\text{VP}: y_i = 1 \text{ e } x_i = 1\\
+\text{VN}: y_i = 0 \text{ e } x_i = 0\\
+\text{FP}: y_i = 0 \text{ e } x_i = 1\\
+\text{FN}: y_i = 1 \text{ e } x_i = 0$$
+
+``` python
+x = np.array([1, 1, 0, 1, 0])
+y = np.array([1, 0, 1, 1, 0])
+vp, vn, fp, fn = erros(x, y) # 2, 1, 1, 1
+```
+
+## *metricas.acuracia*
+
+### Parâmetros
+__________________________
+
+`x` : Vetor que contém os valores previstos pelo seu modelo;
+
+`y` : Vetor que contém os valores observados nos seus dados.
+
+Retorna um `float`
+
+### Definição
+__________________________
+
+Essa função calcula a acurácia da sua previsão.
+
+$$\text{Acurácia}(x,y) = \frac{\text{VP}+\text{VN}}{\text{VP}+\text{VN}+\text{FP}+\text{FN}}$$
+
+``` python
+x = np.array([1, 1, 0, 1, 0])
+y = np.array([1, 0, 1, 1, 0])
+print(acuracia(x, y)) # 3/5
+```
+
+## *metricas.precisao*
+
+### Parâmetros
+__________________________
+
+`x` : Vetor que contém os valores previstos pelo seu modelo;
+
+`y` : Vetor que contém os valores observados nos seus dados.
+
+Retorna um `float`
+
+### Definição
+__________________________
+
+Essa função calcula a previsão da sua previsão.
+
+$$\text{Precisão}(x,y) = \frac{\text{VP}}{\text{VP}+\text{FP}}$$
+
+``` python
+x = np.array([1, 1, 0, 1, 0])
+y = np.array([1, 0, 1, 1, 0])
+print(precisao(x, y)) # 2/3
+```
+
+## *metricas.recall*
+
+### Parâmetros
+__________________________
+
+`x` : Vetor que contém os valores previstos pelo seu modelo;
+
+`y` : Vetor que contém os valores observados nos seus dados.
+
+Retorna um `float`
+
+### Definição
+__________________________
+
+Essa função calcula o recall da sua previsão.
+
+$$\text{Recall}(x,y) = \frac{\text{VP}}{\text{VP}+\text{FN}}$$
+
+``` python
+x = np.array([1, 1, 0, 1, 0])
+y = np.array([1, 0, 1, 1, 0])
+print(recall(x, y)) # 2/3
+```
+
+## *metricas.F1*
+
+### Parâmetros
+__________________________
+
+`x` : Vetor que contém os valores previstos pelo seu modelo;
+
+`y` : Vetor que contém os valores observados nos seus dados.
+
+Retorna um `float`
+
+### Definição
+__________________________
+
+Essa função calcula o $F_1$-score da sua previsão.
+
+$$\text{F}_1(x,y) = 2\cdot\frac{\text{Precisão}(x,y)\cdot\text{Recall}(x,y)}{\text{Precisão}(x,y) + \text{Recall}(x,y)}$$
+
+``` python
+x = np.array([1, 1, 0, 1, 0])
+y = np.array([1, 0, 1, 1, 0])
+print(F1(x, y)) # 2/3
+```
