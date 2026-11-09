@@ -78,3 +78,10 @@ Para executar os testes, utilize o comando:
 ```bash
 pytest tests/
 ```
+
+## Instalação
+
+A instalação da biblioteca pode ser realizada diretamente pelo gerenciador de pacotes pip, utilizando o seguinte comando:
+
+```bash
+pip install machinelearnig-mnpkllps
