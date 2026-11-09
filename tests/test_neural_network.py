@@ -164,3 +164,20 @@ def test_example_2():
 
     for x1 in range(20):
         rn2.prevision(x1)
+
+def test_save_load():
+    import os
+
+    rn = NN.NeuralNetwork([2, 4, 5, 2], activate_function="sigmoid", output_activation="sigmoid", bias_interval = (-1, 1), weight_interval = (-1, 1))
+    rn.save('test_save_load.npz')
+
+    rn_copy = NN.load_neural_network('test_save_load.npz')
+
+    os.remove("test_save_load.npz")
+
+    assert rn.layers == rn_copy.layers
+    assert rn.activate_functions == rn_copy.activate_functions
+    assert all(np.array_equal(a, b) for a, b in zip(rn.bias, rn_copy.bias))
+    assert all(np.array_equal(a, b) for a, b in zip(rn.weight, rn_copy.weight))
+
+

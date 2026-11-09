@@ -96,3 +96,30 @@ classify bool : Define se queremos retornar o vetor de probabilidade ou atribuir
 Retorna
 -----------
 Valor de saida da rede neural com entrada x
+
+### *NeuralNetwork.NeuralNetwork.save*
+
+```python
+NeuralNetwork.NeuralNetwork.save(path)
+```
+
+Salva o estado atual da rede neural quadando layers, activate functions, weight e bias
+                    
+Parâmetros
+-----------
+path str : Caminho na qual o arquivo deve ficar salvo
+
+## *NeuralNetwork.load_neural_network*
+```python
+NeuralNetwork.NeuralNetwork.load(path)
+```
+
+Carrega o estado de uma rede neural, le: layers, activate functions, weight e bias
+                        
+Parâmetros
+-----------
+path str : Caminho na qual o arquivo deve ler as informações
+
+Retorno
+-----------
+Retorna uma NeuralNetwork com layers, activate functions, weight e bias definidos pelo arquivo
