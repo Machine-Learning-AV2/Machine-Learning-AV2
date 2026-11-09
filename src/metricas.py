@@ -356,3 +356,86 @@ def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
     if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
         raise TypeError('Os vetores devem conter dados numéricos para a norma')
     return norm_lp(y-x, p)
+
+
+# Erros do tipo I e II e verdaeiro positivo e negativo
+def erros(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula a quantidade de verdadeiros e falsos positivos e negativos
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        raise TypeError('Os vetores devem ser arrays numpy')
+    if x.shape != y.shape:
+        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
+    if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
+        raise TypeError('Os vetores devem conter dados numéricos')
+
+    vp = np.sum((y == 1) & (x == 1))
+    vn = np.sum((y == 0) & (x == 0))
+    fp = np.sum((y == 0) & (x == 1))
+    fn = np.sum((y == 1) & (x == 0))
+
+    return vp, vn, fp, fn
+
+
+# Acurácia do modelo
+def acuracia(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula a acurácia da previsão
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    vp, vn, fp, fn = erros(x,y)
+    n = x.size
+    return (vp + vn)/n
+
+
+# Precisão do modelo
+def precisao(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula a precisão da previsão
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    vp, vn, fp, fn = erros(x,y)
+    return vp/(vp + fp) if (vp+fp) > 0 else 0.0
+
+
+# Recall do modelo
+def recall(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula o recall da previsão
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    vp, vn, fp, fn = erros(x,y)
+    return vp/(vp+fn) if (vp+fn) > 0 else 0.0
+
+
+# F_1 do modelo
+def F1(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula o F_1 da previsão
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    p = precisao(x,y)
+    r = recall(x, y)
+    return (2*p*r)/(p+r) if (p+r) > 0 else 0.0
