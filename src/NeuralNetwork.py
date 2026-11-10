@@ -231,7 +231,7 @@ class NeuralNetwork:
             y = layer
 
         if classify:
-            return np.argmax(y)
+            return np.argmax(y.T, axis=1)
 
         return y.T
 
