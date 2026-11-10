@@ -1,5 +1,5 @@
 import numpy as np
-from .metricas import MSE
+from .Metrics import MSE
 
 class KFold:
     def __init__(self,
@@ -8,7 +8,9 @@ class KFold:
             Y : np.ndarray,
             k: int = 5,
             hip = None,
-            stat = MSE
+            stat = MSE,
+            seed = None
+    
         ):
         """Inicialização do método Kfold
         Parâmetros
@@ -24,6 +26,7 @@ class KFold:
         self.k = k
         self.hip = hip
         self.stat = stat
+        self.seed = seed
         temp = self.model(hip) if self.hip is not None else self.model()
         if hasattr(temp, "fit") == False:
             raise AttributeError("O modelo não contém a função 'fit' necessária")
@@ -33,8 +36,9 @@ class KFold:
     def folds(self):
         """Aplicação do K-fold"""
 
-        lista = []                                      
-        inds = np.random.permutation(len(self.X))
+        lista = []             
+        rng = np.random.default_rng(self.seed)                         
+        inds = rng.permutation(len(self.X))
         folds = np.array_split(inds,self.k)             #Lista de acurácias, permutação dos índices e divisão em k folds
 
         for i in range(self.k):
@@ -195,7 +199,8 @@ class FindHiperParam:
             X : np.ndarray,
             Y : np.ndarray,
             grid = [0.1,1,10,100,1000],
-            step = 10
+            step = 10,
+            seed=None
         ):
         """
         Inicialização do método de busca de hiperparâmetros. A implementação assume 
@@ -213,10 +218,11 @@ class FindHiperParam:
         self.Y = Y
         self.step = step
         self.model = model
+        self.seed = seed
 
     def cv_score(self, hipi):
         """Calcula a acurácia de cada hiperparâmetro da grid"""
-        return KFold(self.model,self.X,self.Y, hip = hipi).folds()       #Aplica kfold na grid de hiperparâmetros
+        return KFold(self.model,self.X,self.Y, hip = hipi, seed=self.seed).folds()       #Aplica kfold na grid de hiperparâmetros
 
     def find(self):     
         """Pega o modelo e faz LOOCV, kfold ou booststrap para cada"""

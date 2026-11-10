@@ -1,6 +1,6 @@
 if __name__ == "__main__":
-    from src.Reamostragem import KFold, LOOCV, Bootstrap, FindHiperParam
-    from src.Regressao import RegressaoPolinomial
+    from src.Resampling import KFold, LOOCV, Bootstrap, FindHiperParam
+    from src.Regression import RegressaoPolinomial
     import numpy as np
     seed = 46
     np.random.seed(seed)

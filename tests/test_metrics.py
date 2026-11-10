@@ -1,5 +1,5 @@
 import numpy as np
-from src.metricas import *
+from src.Metrics import *
 import pytest
 
 # Tolerância
@@ -9,12 +9,12 @@ tol = 1e-9
 a = np.array([3, 5, 21, 7, 5, 8])
 b = np.array([4, 6, 12, 4, 4, 1])
 
-c = np.array(['sim', 'sim', 'não', 'sim', 'não'])
-#c = np.array([1, 1, 0, 1, 0])
-d = np.array(['sim', 'não', 'sim', 'sim', 'não'])
-#d = np.array([1, 0, 1, 1, 0])
-l_1 = np.array([['sim', 'não', 2], ['não', 'sim', 1]])
-#l_1 = np.array([[1, 0, 2], [0, 1, 1]])
+#c = np.array(['sim', 'sim', 'não', 'sim', 'não'])
+c = np.array([1, 1, 0, 1, 0])
+#d = np.array(['sim', 'não', 'sim', 'sim', 'não'])
+d = np.array([1, 0, 1, 1, 0])
+#l_1 = np.array([['sim', 'não', 2], ['não', 'sim', 1]])
+l_1 = np.array([[1, 0, 2], [0, 1, 1]])
 
 
 e = np.array([[0.5, 0.2, 0.3], [0.1, 0.85, 0.05], [0.6, 0.3, 0.1]])
@@ -85,3 +85,18 @@ def test_DMAE():
 
 def test_MSE():
     assert DMSE(a, b) == pytest.approx(np.array([-1/3, -1/3, 3, 1, 1/3, 7/3]), abs=tol)
+
+def test_erros():
+    assert erros(c, d) == pytest.approx((2, 1, 1, 1), abs=tol)
+
+def test_acuracia():
+    assert acuracia(c, d) == pytest.approx(3/5, abs=tol)
+
+def test_precisao():
+    assert precisao(c, d) == pytest.approx(2/3, abs=tol)
+
+def test_recall():
+    assert recall(c, d) == pytest.approx(2/3, abs=tol)
+
+def test_F1():
+    assert F1(c, d) == pytest.approx(2/3, abs=tol)

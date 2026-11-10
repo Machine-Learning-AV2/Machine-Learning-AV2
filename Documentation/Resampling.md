@@ -1,6 +1,6 @@
 # Módulo De Reamostragem e Seleção
 
-Arquivo: `src/Reamostragem.py` (apenas NumPy)
+Arquivo: `src/Resampling.py` (apenas NumPy)
 
 Contém **K-fold e LOOCV** (Validação cruzada), **Bootstrap** (Reamostragem) e **Busca por hiperparâmetros** (grid search). `X` é sempre uma matriz `(n_amostras, n_atributos)`, caso os dados tenham apenas um preditor, deve ser um vetor coluna. 
 

@@ -1,6 +1,6 @@
 import numpy as np
 from . import Functions
-from . import metricas
+from .Metrics import MSE, DMSE 
 from typing import Callable
 
 
@@ -128,8 +128,8 @@ class NeuralNetwork:
         
         return array
 
-    def fit(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = lambda y, y_pred: 2*(y_pred - y)/ y.shape[1], learn_rate: float = 0.1, 
-              batch: int = 10, epochs: int = 1000, tol = 1e-9) -> None:
+    def fit(self, X: np.ndarray, y: np.ndarray, loss: Callable = MSE, loss_diff: Callable = DMSE, learn_rate: float = 0.1, 
+              batch: int = 10, epochs: int = 1000, tol = 1e-9, debug: bool = False) -> None:
         """
             Treina a rede neural a partir dos dados X, y
             
@@ -143,20 +143,16 @@ class NeuralNetwork:
             batch int : Quantidade esperada de elementos por balde (10 por padrão);
             epochs int : Quantidade de interações nos dados de treino (1000 por padrão).
         """
-
-        self.loss = loss
-        self.loss_diff = loss_diff
-
-        loss_function: str = 'MSE' #COLOCAR PARA PARAMETROS
-
-        X = self._check_input(X)
-        y = self._check_input(y)
+        X = self._check_input(X.T)
+        y = self._check_input(y.T)
 
 
         index: np.ndarray = np.arange(X.shape[1])
 
-        loss = self.loss(y, self.prevision(X))
+        loss_val = loss(self.prevision(X.T), y.T)
         for epoch in range(epochs):
+            if debug:
+                print(f"Iniciando epoca {epoch}, com erro {loss_val}")
             self._rng.shuffle(index)
 
             for i in range(0, X.shape[1], batch):
@@ -165,16 +161,16 @@ class NeuralNetwork:
                 else:
                     B = index[i: i+batch]
 
-                self._backpropagation(X[:, B], y[:, B], loss_function = loss_function, learn_rate = learn_rate)
+                self._backpropagation(X[:, B], y[:, B], loss_diff = loss_diff , learn_rate = learn_rate)
 
-            loss_aux = self.loss(y, self.prevision(X))
+            loss_aux = loss(self.prevision(X.T), y.T)
 
-            if abs(loss - loss_aux) < tol:
+            if abs(loss_val - loss_aux) / max(abs(loss_val), 1e-9) < tol:
                 break
             else:
-                loss = loss_aux
+                loss_val = loss_aux
 
-    def _backpropagation(self, x: np.ndarray, y: np.ndarray, loss_function: str = 'MSE', learn_rate: float = 0.1) -> None:
+    def _backpropagation(self, x: np.ndarray, y: np.ndarray, loss_diff = DMSE, learn_rate: float = 0.1) -> None:
         """
             Calcula as decidas de gradiente para cada peso e viés.
             
@@ -182,16 +178,15 @@ class NeuralNetwork:
             -----------
             x np.ndarray : Matriz P x N dos dados de treino;
             y np.ndarray : Matriz S x N das saidas de treino;
-            loss_function str : Função perda utilizada para calcular o gradiente;
             learn_rate float : Taxa de aprendizado (0.1 por padrão);
         """
 
 
-        self.prevision(x, save_states=True)
+        self.prevision(x.T, save_states=True)
         cost: list[np.ndarray] = [np.array([]) for _ in range(1, len(self.layers))]
 
         activate_function = self.activate_functions[-1]
-        cost[-1] = self.loss_diff(y, self._state_layers[-1]) * self._function_dictionary[activate_function][1](self._state_linear[-1])
+        cost[-1] = loss_diff(self._state_layers[-1].T, y.T).T * self._function_dictionary[activate_function][1](self._state_linear[-1])
 
         for level in range(len(self.layers)-3, -1, -1):
             activate_function = self.activate_functions[level]
@@ -218,6 +213,8 @@ class NeuralNetwork:
         """
 
         x = self._check_input(x)
+        x = x.T
+
 
         y: np.ndarray = x.copy()
 
@@ -240,7 +237,54 @@ class NeuralNetwork:
         if classify:
             return np.argmax(y)
 
-        return y
+        return y.T
+
+    def save(self, path: str) -> None:
+        """
+        Salva o estado atual da rede neural quadando layers, activate functions, weight e bias
+                    
+        Recomenda-se usar a extenção .npz
+
+        Parâmetros
+        -----------
+        path str : Caminho na qual o arquivo deve ficar salvo
+        """
+        data = {
+            "layers": np.asarray(self.layers),
+            "activate_functions": np.asarray(self.activate_functions, dtype=str)
+        }
+
+        for i, (w, b) in enumerate(zip(self.weight, self.bias)):
+            data[f"weight_{i}"] = w
+            data[f"bias_{i}"] = b
+
+        np.savez_compressed(path, **data)
+
+
+def load_neural_network(path: str) -> NeuralNetwork:
+    """
+    Carrega o estado de uma rede neural, le: layers, activate functions, weight e bias
+                        
+    Parâmetros
+    -----------
+    path str : Caminho na qual o arquivo deve ler as informações
+
+    Retorno
+    -----------
+    Retorna uma NeuralNetwork com layers, activate functions, weight e bias definidos pelo arquivo
+    """
+    with np.load(path, allow_pickle=False) as data:
+        layers = list(data['layers'])
+        activate_functions = list(data['activate_functions'])
+
+        weights = [data[f"weight_{i}"].copy() for i in range(len(layers)-1)]
+        biases = [data[f"bias_{i}"].copy() for i in range(len(layers)-1)]
+
+        nn = NeuralNetwork(layers, activate_functions[:-1], activate_functions[-1])
+        nn.bias = biases
+        nn.weight = weights
+
+        return nn
 
 
 if __name__ == "__main__":
@@ -251,20 +295,20 @@ if __name__ == "__main__":
     rn1 = NeuralNetwork([2, 4, 5, 2], activate_function="sigmoid", output_activation="sigmoid", bias_interval = (-1, 1), weight_interval = (-1, 1))
 
     rng = np.random.default_rng(1)
-    X = rng.uniform(-4, 4, (2, 1000))
+    X = rng.uniform(-4, 4, (1000, 2))
     y = np.zeros(X.shape)
 
-    for i, x in enumerate(X.T):
+    for i, x in enumerate(X):
         if x[0]**2 + x[1]**2 <= 9:
-            y[:, i] = [1, 0]
+            y[i, :] = [1, 0]
         else:
-            y[:, i] = [0, 1]
+            y[i, :] = [0, 1]
 
     rn1.fit(X, y, batch=50)
 
-    x1 = np.array([[1], [0]])
-    x2 = np.array([[3], [3]])
-    x3 = np.array([[5], [5]])
+    x1 = np.array([1, 0])
+    x2 = np.array([3, 3])
+    x3 = np.array([5, 5])
 
     print(f"\nx_1=({x1[0]}, {x1[1]}) y_1 = {rn1.prevision(x1)}")
     print(f"\ny_2 = {rn1.prevision(x2)}")
@@ -282,10 +326,10 @@ if __name__ == "__main__":
 
     f = lambda x: np.exp(x)
 
-    X = np.linspace(-2, 3, 10000).reshape(1, -1)
+    X = np.linspace(-2, 3, 1000).reshape(-1, 1)
     y = f(X)
 
-    rn2.fit(X, y, batch=50, learn_rate=0.001, epochs=10000)
+    rn2.fit(X, y, batch=50, learn_rate=0.001, epochs=1000)
 
     for x1 in range(20):
         print(f"\nx_1={x1}, y_1={rn2.prevision(x1)}")

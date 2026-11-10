@@ -121,3 +121,63 @@ def test_save_state_linear():
     for level in range(len(nn.layers)-1):
 
         assert np.array_equiv(nn._state_linear[level], np.array(correct_linear[level]).T) 
+
+
+def test_example_1():
+
+    rn1 = NN.NeuralNetwork([2, 4, 5, 2], activate_function="sigmoid", output_activation="sigmoid", bias_interval = (-1, 1), weight_interval = (-1, 1))
+
+    rng = np.random.default_rng(1)
+    X = rng.uniform(-4, 4, (1000, 2))
+    y = np.zeros(X.shape)
+
+    for i, x in enumerate(X):
+        if x[0]**2 + x[1]**2 <= 9:
+            y[i, :] = [1, 0]
+        else:
+            y[i, :] = [0, 1]
+
+    rn1.fit(X, y, batch=50)
+
+    x1 = np.array([1, 0])
+    x2 = np.array([3, 3])
+    x3 = np.array([5, 5])
+
+    rn1.prevision(x1)
+    rn1.prevision(x2)
+    rn1.prevision(x3)
+
+    rn1.prevision(x1, classify=True)
+    rn1.prevision(x2, classify=True)
+    rn1.prevision(x3, classify=True)
+
+
+def test_example_2():
+    rn2 = NN.NeuralNetwork([1, 4, 5, 1], activate_function="ReLU", output_activation="identity", bias_interval = (-0.1, 0.1), weight_interval = (-0.1, 0.1))
+
+    f = lambda x: np.exp(x)
+
+    X = np.linspace(-2, 3, 100).reshape(-1, 1)
+    y = f(X)
+
+    rn2.fit(X, y, batch=50, learn_rate=0.001, epochs=1000)
+
+    for x1 in range(20):
+        rn2.prevision(x1)
+
+def test_save_load():
+    import os
+
+    rn = NN.NeuralNetwork([2, 4, 5, 2], activate_function="sigmoid", output_activation="sigmoid", bias_interval = (-1, 1), weight_interval = (-1, 1))
+    rn.save('test_save_load.npz')
+
+    rn_copy = NN.load_neural_network('test_save_load.npz')
+
+    os.remove("test_save_load.npz")
+
+    assert rn.layers == rn_copy.layers
+    assert rn.activate_functions == rn_copy.activate_functions
+    assert all(np.array_equal(a, b) for a, b in zip(rn.bias, rn_copy.bias))
+    assert all(np.array_equal(a, b) for a, b in zip(rn.weight, rn_copy.weight))
+
+

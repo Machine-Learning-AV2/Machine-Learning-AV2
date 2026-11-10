@@ -1,15 +1,5 @@
 import numpy as np 
-
-
-def validate_matrix(X: np.ndarray) -> np.ndarray: #função auxiliar para verificar se os dados da amostra é válido
-    X = np.asarray(X, dtype=float)
-    if X.ndim != 2 or X.shape[0] == 0 or X.shape[1] == 0: #número de linha e Núemrod de colunas, dimensão dois porque temos as observações e também temos os atributos de cada observação
-        raise TypeError("X deve ser 2D e não vazio: (n_amostras, n_atributos)")
-        
-    if not np.all(np.isfinite(X)): #np.all verifica todos os valores são verdadeiros, np.infinite retorna veradeiro ou falso para cada valor, vendp se não é Nan ou infinito
-        raise ValueError("X contém NaN ou infinito")
-    return X
-
+from .preprocessing import validate_matrix
 
 def validate_positive_integer(valor: int, nome: str) -> int: #função auxiliar para verificar se o valor é válido
     if not isinstance(valor, (int, np.integer)) or isinstance(valor, bool): #verifica se o valor é um inteiro

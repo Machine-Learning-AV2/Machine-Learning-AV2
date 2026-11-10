@@ -8,6 +8,13 @@ def sigmoid(x: float | np.ndarray) -> np.ndarray:
     return 1 / (1 + np.exp(-x))
 
 
+def softmax(scores: np.ndarray) -> np.ndarray:
+    scores = np.array(scores)  
+    exp_scores = np.exp(scores - np.max(scores, axis=-1, keepdims=True))
+
+    return exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
+
+
 def sigmoid_diff(x: float | np.ndarray) -> np.ndarray:
     x = np.array(x)
 
@@ -53,12 +60,13 @@ def  identity_diff(x: float | np.ndarray) -> np.ndarray:
 
 functions = {
     'sigmoid': (sigmoid, sigmoid_diff),
+    'softmax': (softmax, None),
     'tanh': (tanh, tanh_diff),
     'ReLU': (ReLU, ReLU_diff),
     'identity': (identity, identity_diff)
 }
 
-functions_name = Literal['identity', 'ReLU', 'sigmoid', 'tanh']
+functions_name = Literal['identity', 'ReLU', 'sigmoid', 'softmax', 'tanh']
 
 if __name__ == "__main__":
     x1, x2 = 0, np.pi

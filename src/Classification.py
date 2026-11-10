@@ -1,8 +1,9 @@
 import numpy as np
-from .metricas import dist
+from .Metrics import dist
+from .Functions import sigmoid, softmax
 
 # Verifica se os dados de input para treino possuem algum erro
-def train_check(X: np.ndarray, Y: np.ndarray) -> None:
+def fit_check(X: np.ndarray, Y: np.ndarray) -> None:
   if not isinstance(X, np.ndarray):
       raise TypeError("X must be numpy array")
   if not isinstance(Y, np.ndarray):
@@ -27,22 +28,13 @@ def predict_element_check(P: np.ndarray, n_features: int) -> None:
       raise ValueError("Test and train must contain same number of features")
   if not np.issubdtype(P.dtype, np.number):
       raise TypeError("Input must contain numerical values")
-
-# Converte um valor real em um valor no intervalo (0, 1)
-def sigmoid(z: float) -> float:
-  return 1/(1+np.exp(-z))
-
-# Versão do sigmoide para mais variáveis (scores). A soma total de probabilities deve ser 1.
-def softmax(scores: np.ndarray) -> np.ndarray:
-  exp_scores = np.exp(scores)
-  return exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
   
 class KNN():
   """
   O modelo de K nearest neighbors, para um K escolhido
   """
 
-  def __init__(self, K: int, p=2, normalize=False):
+  def __init__(self, K: int = 5, p=2, normalize=False):
     """
     Inicia o modelo KNN
       --------------
@@ -77,7 +69,7 @@ class KNN():
       Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
     if self.normalize:
       self.mean = X.mean(axis=0)
       self.standard = X.std(axis=0)
@@ -151,7 +143,7 @@ class Logistic_Regression():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
 
     # Usa a decida de gradiente para estimar beta
     n_samples, n_parameters = X.shape
@@ -228,7 +220,7 @@ class LDA():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
@@ -312,7 +304,7 @@ class QDA():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X.
     """
     
-    train_check(X, Y)
+    fit_check(X, Y)
 
     # Toma a frequência de cada classe como a probabilidade desta ocorrer
     values, counting = np.unique(Y, return_counts=True)
@@ -387,7 +379,7 @@ class SVM():
   O modelo de Support Vector Machine linear com margem flexível, treinado por descida do subgradiente no primal.
   Com mais de duas classes, usa a estratégia um-contra-um (one-vs-one).
   """
-  def __init__(self, C: float, learning_rate: float = 0.01, max_iterations: int = 1000):
+  def __init__(self, C: float = 1, learning_rate: float = 0.01, max_iterations: int = 1000):
     """
     Inicia o modelo SVM
 
@@ -412,7 +404,7 @@ class SVM():
     self.n_features = None
     self.machines = None  # Lista de (i, j, w, b): SVM binário entre as classes values[i] (-1) e values[j] (+1)
 
-  def train_binary(self, X: np.ndarray, y: np.ndarray):
+  def fit_binary(self, X: np.ndarray, y: np.ndarray):
     # Minimiza J(w,b) = 1/2 ||w||^2 + C/N Σ max(0, 1 - y_i (w^T x_i + b)). Os rótulos y são -1 ou +1.
     N, n_parameters = X.shape
     w = np.zeros(n_parameters)
@@ -441,7 +433,7 @@ class SVM():
     Y: array com todas as classes observadas nos dados de treino. Deve ser compatível com a dimensão de X. Precisa conter pelo menos 2 classes.
     """
 
-    train_check(X, Y)
+    fit_check(X, Y)
 
     values = np.unique(Y)
 
@@ -453,7 +445,7 @@ class SVM():
       for j in range(i + 1, len(values)):
         pair = (Y == values[i]) | (Y == values[j]) #pega apneas as amostras das duas classes atuais
         y = np.where(Y[pair] == values[j], 1.0, -1.0) #colocando rótulos 1 e -1
-        w, b = self.train_binary(X[pair], y)
+        w, b = self.fit_binary(X[pair], y)
         machines.append((i, j, w, b))
 
     self.values = values

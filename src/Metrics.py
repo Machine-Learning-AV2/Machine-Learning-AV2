@@ -34,7 +34,7 @@ def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([])
     ---------
     >>> x = np.array([1, 2, 4])
     >>> y = np.array([1, 3, 5])
-    >>> loss(x, y, 2) # Retorna (|1-1|^2 + |3-2|^2 + |5-4|^2) = 2
+    >>> loss(x, y, 2) # Retorna (|1-1|**2 + |3-2|**2 + |5-4|**2) = 2
     >>> l = np.array([2, 3, 2]) # O peso em classificar x = 2 enquanto y = 3 é 2
     >>> loss(x, y, 'ind', l, 3) # Classificar errado nos demais casos tem peso 3"""
     
@@ -43,10 +43,8 @@ def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([])
     if x.shape != y.shape:
         raise ValueError('Os dois vetores devem ter o mesmo tamanho')
     if l.size > 0:
-        for i in l:
-            size = l.shape
-            if size[1] != 3:
-                raise TypeError('As restrições devem conter o valor previsto, o observado e o peso da penalidade (apenas)')
+        if l.ndim != 2 or l.shape[1] != 3:
+            raise TypeError('As restrições devem conter o valor previsto, o observado e o peso da penalidade (apenas)')
     if not isinstance(subs, (int, float)):
         raise TypeError('O valor de substituição padrão deve ser numérico')
     
@@ -65,7 +63,8 @@ def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([])
     elif p == 'ind':
         soma = 0
         l_x = [i[0] for i in l]
-        for i in range(x.size):
+        n, *m = x.shape
+        for i in range(n):
             if x[i] != y[i]:
                 if x[i] in l_x:
                     indxs = [indx for indx, x_ in enumerate(l_x) if x_ == x[i]]
@@ -157,12 +156,12 @@ def empirical_risk(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np
 
     if isinstance(p, (int, float)):
         if p < float('inf'):
-            n = x.size
+            n, *m = x.shape
             return loss(x, y, p, l, subs) / n
         else:
             raise ValueError('O parâmetro deve ser um valor finito')
     elif p == 'ind':
-        n = x.size
+        n, *m = x.shape
         return loss(x, y, p, l, subs) / n
     elif p == 'log':
         n, *m = x.shape
@@ -170,8 +169,6 @@ def empirical_risk(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np
     else:
         raise TypeError('Método não implementado')
 
-def classification_error(x: np.ndarray, y: np.ndarray) -> float:
-    return empirical_risk(x, y, 'ind')
 
 # (Mean Absolute Error - Erro Absoluto Médio)
 def MAE(x:np.ndarray, y:np.ndarray) -> float:
@@ -215,7 +212,7 @@ def RMSE(x:np.ndarray, y:np.ndarray) -> float:
 # (Total Sum of Squares) - Soma dos Quadrados Total
 def TSS(x:np.ndarray) -> float:
 
-    """Retorna a soma de |x_i - (média de x)|^2 para todo x_i em x
+    """Retorna a soma de (x_i - (média de x))^2 para todo x_i em x
     
     Parâmetros
     -----------
@@ -223,7 +220,9 @@ def TSS(x:np.ndarray) -> float:
 
     if not np.issubdtype(x.dtype, np.number):
         raise TypeError('O vetor deve conter dados numéricos')
-    return float(np.sum((x-x.mean())**2))
+    
+    media = x.mean()
+    return float(np.sum((x-media)**2))
 
 
 # (R^2) - R-Quadrado
@@ -239,6 +238,83 @@ def R2(x:np.ndarray, y:np.ndarray) -> float:
     RSS_ = RSS(x, y)
     tss_ = TSS(y)
     return 1 - (RSS_/tss_)
+
+
+# Derivada do risco empírico para calcular a descida de gradiente
+def dif_empirical_risk(x: np.ndarray, y:np.ndarray, p:float, tol:float = 1e-9) -> np.ndarray:
+
+    """Retorna o valor da derivada () do risco empírico de uma previsão segundo a função loss desejada
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados;
+    p : Parâmetro que define a função loss;
+    tol : Tolerância para o float.
+
+    Funções loss implementadas
+    ----------------------------
+    p (numérico) = |y - x|^p;
+    p (log) = -sum(y*log(x)).
+
+    Exemplos
+    ---------
+    >>> x = np.array([1, 2, 4])
+    >>> y = np.array([1, 3, 5])
+    >>> dif_empirical_risk(x, y, 2) # Retorna np.array([0, -2/3, -2/3])"""
+
+    if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
+        raise TypeError('Os vetores devem ser arrays numpy')
+    if x.shape != y.shape:
+        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
+
+    if isinstance(p, (int, float)):
+        if p < float('inf'):
+            if 1 <= p:
+                n, *m = x.shape
+
+                # Caso de descontinuidade
+                if p==1:
+                    return np.where(np.abs(y - x) < tol, 0.0, (-np.sign(y - x)) / n)
+
+                # Derivada df/dx = -p*sign(y-x)*|y-x|**(p-1)/n
+                return (-p * abs(y-x)**(p-1) * np.sign(y-x)) / n
+            else:
+                raise ValueError('O parâmetro deve ser maior ou igual a 1')
+        else:
+            raise ValueError('O parâmetro deve ser um valor finito')
+
+    elif p == 'log':
+        n, *m = x.shape
+        return -y/(x*n)
+    else:
+        raise TypeError('Método não implementado')
+
+
+# Derivada do MAE
+def DMAE(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna a derivada da soma de |y_i-x_i|/n para todo y_i em y e x_i em x
+
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    return dif_empirical_risk(x, y, 1)
+
+
+# Derivada do MSE
+def DMSE(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Retorna a derivada da soma de (|y_i-x_i|^2)/n para todo y_i em y e x_i em x
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    return dif_empirical_risk(x, y, 2)
 
 
 # Norma Lp de um vetor
@@ -282,79 +358,84 @@ def dist(x:np.ndarray, y:np.ndarray, p:float) -> float:
     return norm_lp(y-x, p)
 
 
-# Derivada do risco empírico para calcular a descida de gradiente
-def dif_empirical_risk(x: np.ndarray, y:np.ndarray, p:float, tol:float = 1e-9) -> np.ndarray:
+# Erros do tipo I e II e verdaeiro positivo e negativo
+def erros(x:np.ndarray, y:np.ndarray) -> float:
 
-    """Retorna o valor da deerivada () do risco empírico de uma previsão segundo a função loss desejada
+    """Calcula a quantidade de verdadeiros e falsos positivos e negativos
     
     Parâmetros
     -----------
     x : Vetor que contém os valores previstos pelo seu modelo;
-    y : Vetor que contém os valores observados nos seus dados;
-    p : Parâmetro que define a função loss;
-    tol : Tolerância para o float.
-
-    Funções loss implementadas
-    ----------------------------
-    p (numérico) = |y - x|^p;
-    p (log) = -sum(y*log(x)).
-
-    Exemplos
-    ---------
-    >>> x = np.array([1, 2, 4])
-    >>> y = np.array([1, 3, 5])
-    >>> dif_empirical_risk(x, y, 2) # Retorna np.array([0, -2/3, -2/3])"""
+    y : Vetor que contém os valores observados nos seus dados."""
 
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
     if x.shape != y.shape:
         raise ValueError('Os dois vetores devem ter o mesmo tamanho')
+    if not np.issubdtype(x.dtype, np.number) or not np.issubdtype(y.dtype, np.number):
+        raise TypeError('Os vetores devem conter dados numéricos')
 
-    if isinstance(p, (int, float)):
-        if p < float('inf'):
-            if 1 <= p:
-                n, *m = x.shape
-                if n != x.size:
-                    raise TypeError('x e y devem ser vetores unidimensionais')
+    vp = np.sum((y == 1) & (x == 1))
+    vn = np.sum((y == 0) & (x == 0))
+    fp = np.sum((y == 0) & (x == 1))
+    fn = np.sum((y == 1) & (x == 0))
 
-                # Caso de descontinuidade
-                if p==1:
-                    return np.where(np.abs(y - x) < tol, 0.0, (-np.sign(y - x)) / n)
-
-                # Derivada df/dx = -p*sign(y-x)*|y-x|**(p-1)/n
-                return (p * abs(y-x)**(p-1) * -np.sign(y-x)) / n
-            else:
-                raise ValueError('O parâmetro deve ser maior ou igual a 1')
-        else:
-            raise ValueError('O parâmetro deve ser um valor finito')
-    elif p == 'log':
-        n, *m = x.shape
-        return -y/(x*n)
-    else:
-        raise TypeError('Método não implementado')
+    return vp, vn, fp, fn
 
 
-# Derivada do MAE
-def DMAE(x:np.ndarray, y:np.ndarray) -> float:
+# Acurácia do modelo
+def acuracia(x:np.ndarray, y:np.ndarray) -> float:
 
-    """Retorna a derivada da soma de |y_i-x_i|/n para todo y_i em y e x_i em x
-
-    Parâmetros
-    -----------
-    x : Vetor que contém os valores previstos pelo seu modelo;
-    y : Vetor que contém os valores observados nos seus dados."""
-
-    return dif_empirical_risk(x, y, 1)
-
-
-# Derivada do MSE
-def DMSE(x:np.ndarray, y:np.ndarray) -> float:
-
-    """Retorna a derivada da soma de (|y_i-x_i|^2)/n para todo y_i em y e x_i em x
+    """Calcula a acurácia da previsão
     
     Parâmetros
     -----------
     x : Vetor que contém os valores previstos pelo seu modelo;
     y : Vetor que contém os valores observados nos seus dados."""
 
-    return dif_empirical_risk(x, y, 2)
+    vp, vn, fp, fn = erros(x,y)
+    n = x.size
+    return (vp + vn)/n
+
+
+# Precisão do modelo
+def precisao(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula a precisão da previsão
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    vp, vn, fp, fn = erros(x,y)
+    return vp/(vp + fp) if (vp+fp) > 0 else 0.0
+
+
+# Recall do modelo
+def recall(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula o recall da previsão
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    vp, vn, fp, fn = erros(x,y)
+    return vp/(vp+fn) if (vp+fn) > 0 else 0.0
+
+
+# F_1 do modelo
+def F1(x:np.ndarray, y:np.ndarray) -> float:
+
+    """Calcula o F_1 da previsão
+    
+    Parâmetros
+    -----------
+    x : Vetor que contém os valores previstos pelo seu modelo;
+    y : Vetor que contém os valores observados nos seus dados."""
+
+    p = precisao(x,y)
+    r = recall(x, y)
+    return (2*p*r)/(p+r) if (p+r) > 0 else 0.0

@@ -60,10 +60,10 @@ Retorna
 -----------
 matriz dos pesos com dimenção da largura do layer[nivel] x layer[nivel-1]
 
-### *NeuralNetwork.NeuralNetwork.train*
+### *NeuralNetwork.NeuralNetwork.fit*
 
 ```python
-NeuralNetwork.NeuralNetwork.train(X, y: np.ndarray, loss = MSE, loss_diff = DMSE, learn_rate = 0.1, batch = 10, epochs = 1000, tol = 1e-9)
+NeuralNetwork.NeuralNetwork.fit(X, y: np.ndarray, loss = MSE, loss_diff = DMSE, learn_rate = 0.1, batch = 10, epochs = 1000, tol = 1e-9, debug = False)
 ```
 
 Treina a rede neural a partir dos dados X, y
@@ -76,7 +76,8 @@ loss Callable : Função perda para aprendizado;\
 loss_diff Callable : Derivada da função perda para backpropagation;\
 learn_rate float : Taxa de aprendizado (0.1 por padrão);\
 batch int : Quantidade esperada de elementos por balde (10 por padrão);\
-epochs int : Quantidade de interações nos dados de treino (1000 por padrão).
+epochs int : Quantidade de interações nos dados de treino (1000 por padrão)\
+debug bool : Quando True mostra em qual epoca está e qual a perda do momento (False por padrão)
 
 ### *NeuralNetwork.NeuralNetwork.prevision*
 
@@ -95,3 +96,30 @@ classify bool : Define se queremos retornar o vetor de probabilidade ou atribuir
 Retorna
 -----------
 Valor de saida da rede neural com entrada x
+
+### *NeuralNetwork.NeuralNetwork.save*
+
+```python
+NeuralNetwork.NeuralNetwork.save(path)
+```
+
+Salva o estado atual da rede neural quadando layers, activate functions, weight e bias
+                    
+Parâmetros
+-----------
+path str : Caminho na qual o arquivo deve ficar salvo
+
+## *NeuralNetwork.load_neural_network*
+```python
+nn = NeuralNetwork.load_neural_network(path)
+```
+
+Carrega o estado de uma rede neural, le: layers, activate functions, weight e bias
+                        
+Parâmetros
+-----------
+path str : Caminho na qual o arquivo deve ler as informações
+
+Retorno
+-----------
+Retorna uma NeuralNetwork com layers, activate functions, weight e bias definidos pelo arquivo

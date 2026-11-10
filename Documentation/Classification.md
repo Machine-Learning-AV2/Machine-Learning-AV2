@@ -1,6 +1,6 @@
 # MÓDULO DE CLASSIFICAÇÃO
 
-**Arquivo:** `src/classification.py`
+**Arquivo:** `src/Classification.py`
 
 Este módulo implementa quatro algoritmos de classificação:
 
@@ -128,7 +128,7 @@ X_fit = np.array([
 ])
 
 # Classes correspondentes aos dados de treinamento
-y_fit = np.array([0]*10 + [1]*10 + [2]*10)
+y_train = np.array([0]*10 + [1]*10 + [2]*10)
 
 # Dados de teste
 X_test = np.array([
@@ -153,7 +153,7 @@ X_test = np.array([
 model = KNN(K=3)
 
 # Treinamento
-model.fit(X_fit, y_fit)
+model.fit(X_train, y_train)
 
 # Previsões
 print(model.predict(X_test))
@@ -171,4 +171,4 @@ Esse resultado representa a classificação das 15 observações do conjunto de 
 
 ---
 
-**Nota:** o exemplo utiliza KNN apenas para ilustrar o fluxo de utilização. Os demais classificadores seguem a mesma interface de treinamento e previsão (`train()` e `predict()`).
+**Nota:** o exemplo utiliza KNN apenas para ilustrar o fluxo de utilização. Os demais classificadores seguem a mesma interface de treinamento e previsão (`fit()` e `predict()`).
