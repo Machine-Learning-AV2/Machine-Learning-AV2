@@ -1,4 +1,4 @@
-# MÓDULO DE CLASSIFICAÇÃO
+# MÓDULO DE REGRESSÃO
 
 **Arquivo:** `src/Regression.py`
 
