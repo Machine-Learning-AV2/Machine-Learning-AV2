@@ -1,5 +1,5 @@
 import numpy as np
-from .metricas import dist
+from .Metrics import dist
 from .Functions import sigmoid, softmax
 
 # Verifica se os dados de input para treino possuem algum erro
