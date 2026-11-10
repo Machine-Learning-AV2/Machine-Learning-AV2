@@ -1,6 +1,6 @@
 import numpy as np
 from . import Functions
-from .Metrics import MSE, DMSE 
+from .metricas import MSE, DMSE 
 from typing import Callable
 
 
@@ -83,10 +83,7 @@ class NeuralNetwork:
         if x.ndim > 2:
             raise ValueError("Entrada invalida, x deve ser um vetor ou matriz")
         elif x.ndim == 1:
-            if len(x) == 1:
-                x = x.reshape(-1, 1) 
-            else:
-                x = x.reshape(1, -1)
+                x = x.reshape(-1, 1)
 
         return x
 
