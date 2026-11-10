@@ -40,8 +40,8 @@ def loss(x: np.ndarray, y:np.ndarray, p:float | str, l:np.ndarray = np.array([])
     
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
-    #if x.shape != y.shape:
-        #raise ValueError('Os dois vetores devem ter o mesmo tamanho')
+    if x.shape != y.shape:
+        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
     if l.size > 0:
         if l.ndim != 2 or l.shape[1] != 3:
             raise TypeError('As restrições devem conter o valor previsto, o observado e o peso da penalidade (apenas)')
@@ -265,8 +265,8 @@ def dif_empirical_risk(x: np.ndarray, y:np.ndarray, p:float, tol:float = 1e-9) -
 
     if not isinstance(x, np.ndarray) or not isinstance(y, np.ndarray):
         raise TypeError('Os vetores devem ser arrays numpy')
-    #if x.shape != y.shape:
-        #raise ValueError('Os dois vetores devem ter o mesmo tamanho')
+    if x.shape != y.shape:
+        raise ValueError('Os dois vetores devem ter o mesmo tamanho')
 
     if isinstance(p, (int, float)):
         if p < float('inf'):
