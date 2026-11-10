@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from src.preprocessing import *
+from src.Preprocessing import *
 
 # tests designed by claude
 
