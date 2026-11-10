@@ -1,5 +1,5 @@
 import pytest
-from src.unsupervised_learning import *
+from src.UnsupervisedLearning import *
 import numpy as np
 
 def test_kmeans():
