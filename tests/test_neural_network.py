@@ -143,13 +143,13 @@ def test_example_1():
     x2 = np.array([3, 3])
     x3 = np.array([5, 5])
 
-    rn1.prevision(x1)
-    rn1.prevision(x2)
-    rn1.prevision(x3)
+    rn1.prevision(x1.reshape(1, -1))
+    rn1.prevision(x2.reshape(1, -1))
+    rn1.prevision(x3.reshape(1, -1))
 
-    rn1.prevision(x1, classify=True)
-    rn1.prevision(x2, classify=True)
-    rn1.prevision(x3, classify=True)
+    rn1.prevision(x1.reshape(1, -1), classify=True)
+    rn1.prevision(x2.reshape(1, -1), classify=True)
+    rn1.prevision(x3.reshape(1, -1), classify=True)
 
 
 def test_example_2():
