@@ -1,6 +1,6 @@
 # MÓDULO DE CLASSIFICAÇÃO
 
-**Arquivo:** `src/classification.py`
+**Arquivo:** `src/Classification.py`
 
 Este módulo implementa quatro algoritmos de classificação:
 
