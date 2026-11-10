@@ -1,5 +1,5 @@
 import numpy as np
-from src.metricas import *
+from src.Metrics import *
 import pytest
 
 # Tolerância
