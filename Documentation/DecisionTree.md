@@ -1,6 +1,6 @@
 # Módulo Árvores de Decisão
 
-Arquivo: `src/arvores_decisao.py` (apenas NumPy)
+Arquivo: `src/DevisionTree.py` (apenas NumPy)
 
 O módulo implementa dois modelos de árvores de decisão: classificação e regressão. Ambos utilizam divisões binárias recursivas dos dados, escolhendo a característica e o limite que minimizam uma medida de impureza ou erro.
 
