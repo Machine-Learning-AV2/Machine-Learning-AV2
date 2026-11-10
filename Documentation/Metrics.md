@@ -1,6 +1,6 @@
 # Módulo Metricas
 
-Arquivo: `src/metricas.py` (apenas NumPy)
+Arquivo: `src/Metrics.py` (apenas NumPy)
 
 Para todas as funções deste módulo, vamos considerar `x` como o vetor de valores previstos pelo método e `y` é o vetor de valores reais observados. Ambos devem ter as mesmas dimensões.
 
