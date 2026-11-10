@@ -1,6 +1,6 @@
 # MÓDULO DE PRÉ-PROCESSAMENTO
 
-**Arquivo:** `src/preprocessing.py`
+**Arquivo:** `src/Preprocessing.py`
 
 Este módulo prepara os dados antes de entregá-los aos modelos da biblioteca. Ele implementa duas funções e quatro classes:
 
