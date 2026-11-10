@@ -1,6 +1,6 @@
 # Módulo Não Supervisionado
 
-Arquivo: `src/unsupervised_learning.py` (apenas NumPy)
+Arquivo: `src/UnsupervisedLearning.py` (apenas NumPy)
 
 Contém **K-means** (agrupamento) e **PCA** (redução de dimensionalidade). `X` é sempre uma matriz `(n_amostras, n_atributos)`. Chamar `predict` ou `transform` antes do `fit` levanta `RuntimeError`.
 
