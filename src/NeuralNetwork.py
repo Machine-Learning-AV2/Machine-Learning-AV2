@@ -3,7 +3,48 @@ from . import Functions
 from .Metrics import MSE, DMSE 
 from typing import Callable
 
+class NeuralNetwork:
+    def __init__(self, layers: list[int], activate_function: Functions.functions_name | list[Functions.functions_name], 
+                 output_activation: Functions.functions_name = 'identity', function_dictionary: dict[str, tuple[Callable, Callable]] = Functions.functions,  
+                 bias_interval: tuple[float, float] = (0, 1), weight_interval: tuple[float, float] = (0, 1), 
+                 seed:int = 782) -> None:
+        """
+            Intancia um elemento a classe NeuralNetwork com pesos e vieses aleatórios dentro do intervalo estipulado.
+            
+            Parâmetros
+            -----------
+            layers list[int] : Quantas layers tem e qual a largura de cada;
+            activate_function str | list[str] : Quais funções de ativação serão usadas a cada camada oculta;
+            output_activation str | list[str] : Qual a função ativação da camada de saida (identidade por padrão);
+            function_dictionary dict[str, tuple[Callable, Callable]] : Mapa de funções de ativação e suas derivadas;
+            baias_interval tuple[float, float] : Qual intervalo os vieses serão gerado ((0, 1) por padrão);
+            weight_interval tuple[float, float] : Qual intervalo os pesos serão gerado ((0, 1) por padrão);
+            seed int : Seed usada para gerar os vieses e pesos
+        """
 
+        self.original_seed = seed
+        self._rng = np.random.default_rng(seed)
+        self.layers = layers
+
+        self._state_linear: list[np.ndarray] = [np.array([]) for _ in range(1, len(layers))]
+        self._state_layers: list[np.ndarray] = [np.array([]) for _ in range(len(layers))]
+
+        self.bias: list[np.ndarray] = [self.random_bias(i, *bias_interval) for i in range(1, len(layers))]
+        self.weight: list[np.ndarray] = [self.random_weight(i, *weight_interval) for i in range(1, len(layers))]
+
+        if isinstance(activate_function, list):
+            if len(activate_function) != len(layers)-2:
+                raise ValueError("ERROR: Quantidade de funções diferente dos layers ocultos")
+            self.activate_functions: list[str] = activate_function.copy()
+        elif isinstance(activate_function, str):
+            self.activate_functions: list[str] = [activate_function] * (len(layers) - 2)
+        else :
+            raise TypeError("ERROR: Tipo da activete_function está incorreto")
+
+        self.activate_functions += [output_activation]
+        self._function_dictionary = function_dictionary.copy()
+
+        self._check_activate(self.activate_functions, self._function_dictionary)
 
     @staticmethod
     def _check_activate(activate_functions: list[str], function_dictionary: dict[str, tuple[Callable, Callable]]) -> None:
