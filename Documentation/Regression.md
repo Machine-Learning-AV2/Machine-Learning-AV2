@@ -1,6 +1,6 @@
 # MÓDULO DE CLASSIFICAÇÃO
 
-**Arquivo:** `src/Regressao.py`
+**Arquivo:** `src/Regression.py`
 
 Este módulo implementa quatro algoritmos de Regressão:
 
