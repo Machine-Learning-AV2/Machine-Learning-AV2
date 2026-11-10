@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.decision_tree import (
+from src.DecisionTree import (
     DecisionTreeClassification,
     DecisionTreeRegression
 )
