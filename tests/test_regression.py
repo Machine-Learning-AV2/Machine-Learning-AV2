@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.Regressao import (
+from src.Regression import (
     MinimosQuadrados,
     Ridge,
     Lasso,
