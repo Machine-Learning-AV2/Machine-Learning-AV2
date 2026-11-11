@@ -1,5 +1,5 @@
 import numpy as np 
-from .preprocessing import validate_matrix
+from .Preprocessing import validate_matrix
 
 def validate_positive_integer(valor: int, nome: str) -> int: #função auxiliar para verificar se o valor é válido
     if not isinstance(valor, (int, np.integer)) or isinstance(valor, bool): #verifica se o valor é um inteiro
